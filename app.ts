@@ -8,8 +8,8 @@ import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 // 	getVoiceConnection,
 // } from 'npm:@discordjs/voice';
 
-import { DisTube } from 'distube'
-import { SpotifyPlugin } from '@distube/spotify'
+// import { DisTube } from 'distube'
+// import { SpotifyPlugin } from '@distube/spotify'
 
 import { REST } from 'npm:@discordjs/rest@^2.0.0'
 import { WebSocketManager } from 'npm:@discordjs/ws@^1.0.0'
@@ -27,13 +27,13 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway })
 
-const distube = new DisTube(client, {
-	emitNewSongOnly: true,
-	leaveOnFinish: true,
-	leaveOnEmpty: true,
-	emitAddSongWhenCreatingQueue: false,
-	plugins: [new SpotifyPlugin()]
-})
+// const distube = new DisTube(client, {
+// 	emitNewSongOnly: true,
+// 	leaveOnFinish: true,
+// 	leaveOnEmpty: true,
+// 	emitAddSongWhenCreatingQueue: false,
+// 	plugins: [new SpotifyPlugin()]
+// })
 
 const voiceStates = new Map<string, string>()
 
@@ -102,7 +102,7 @@ app.post('/play', async c => {
 		return c.json({ success: false, message: 'User not in a voice channel' })
 	}
 	const channel = await client.api.channels.get(state) as APITextChannel
-	distube.play(channel, url)
+	// distube.play(channel, url)
 })
 
 // app.get('/callback/:type', c => {
