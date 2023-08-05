@@ -54,7 +54,7 @@ type Variables = {
 
 const app = new Hono<{ Variables: Variables }>({strict:false})
 
-app.get('/', c => c.redirect('/'))
+app.get('/', c => c.redirect('//muusik.app'))
 
 app.get('/login', c => 
 	c.redirect(`https://discord.com/api/oauth2/authorize?client_id=1137124050792087682&redirect_uri=http%3A%2F%2Flocalhost%3A5714%2Fcallback&response_type=code&scope=identify%20rpc.voice.read%20guilds`))
