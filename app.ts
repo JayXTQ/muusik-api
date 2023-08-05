@@ -3,10 +3,10 @@ const env = await load()
 
 import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 
-import {
-	joinVoiceChannel,
-	getVoiceConnection,
-} from 'npm:@discordjs/voice';
+// import {
+// 	joinVoiceChannel,
+// 	getVoiceConnection,
+// } from 'npm:@discordjs/voice';
 
 import { DisTube } from 'npm:distube'
 import { SpotifyPlugin } from 'npm:@distube/spotify'
@@ -91,11 +91,11 @@ app.post('/play', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'No url, user, or guild provided' })
 	}
-	const status = getVoiceConnection(guild.id as string)
-	if(status || status){
-		c.status(400)
-		return c.json({ success: false, message: 'Already playing' })
-	}
+	// const status = getVoiceConnection(guild.id as string)
+	// if(status || status){
+	// 	c.status(400)
+	// 	return c.json({ success: false, message: 'Already playing' })
+	// }
 	const state = voiceStates.get(user as string)
 	if (!state) {
 		c.status(400)
