@@ -8,8 +8,8 @@ import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 // 	getVoiceConnection,
 // } from 'npm:@discordjs/voice';
 
-import { DisTube } from 'npm:distube'
-import { SpotifyPlugin } from 'npm:@distube/spotify'
+import { DisTube } from 'distube'
+import { SpotifyPlugin } from '@distube/spotify'
 
 import { REST } from 'npm:@discordjs/rest@^2.0.0'
 import { WebSocketManager } from 'npm:@discordjs/ws@^1.0.0'
