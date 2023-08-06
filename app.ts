@@ -99,13 +99,13 @@ app.post('/play', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'User not in a voice channel' })
 	}
-	const channel = await client.api.channels.get(state) as APITextChannel
-	joinVoiceChannel({
-		channelId: channel.id,
-		guildId: guild.id,
-		adapterCreator: guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
-		selfDeaf: true,
-	})
+	// const channel = await client.api.channels.get(state) as APITextChannel
+	// joinVoiceChannel({
+	// 	channelId: channel.id,
+	// 	guildId: guild.id,
+	// 	adapterCreator: guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
+	// 	selfDeaf: true,
+	// })
 })
 
 app.get('/callback/:type', c => {
