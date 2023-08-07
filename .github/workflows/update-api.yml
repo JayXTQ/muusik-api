@@ -17,4 +17,4 @@ jobs:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.PASSWORD }}
-        script: "cd muusik-api && sudo git pull && pm2 restart app"
+        script: "cd muusik-api && sudo git pull && /home/ubuntu/.nvm/versions/node/v18.17.0/bin/pm2 restart app"
