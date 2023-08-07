@@ -63,6 +63,8 @@ app.get('/login', c =>
 	c.redirect(`https://discord.com/api/oauth2/authorize?client_id=1137124050792087682&redirect_uri=https%3A%2F%2Fmuusik.app%2Fdashboard&response_type=token&scope=identify%20guilds`))
 
 app.get('/find-user', async c => {
+	c.header('Access-Control-Allow-Origin', '*')
+	c.header('Access-Control-Allow-Credentials', 'true')
 	const {user} = await c.req.json()
 	if(!user){
 		c.status(400)
@@ -84,6 +86,8 @@ app.get('/find-user', async c => {
 })
 
 app.post('/play', async c => {
+	c.header('Access-Control-Allow-Origin', '*')
+	c.header('Access-Control-Allow-Credentials', 'true')
 	let { url, user, guild } = Object.fromEntries(await c.req.formData()) as {
 		url: string
 		user: string
@@ -117,26 +121,34 @@ app.get('/callback/:type', c => {
 })
 
 app.get('/find-song', async c => {
+	c.header('Access-Control-Allow-Origin', '*')
+	c.header('Access-Control-Allow-Credentials', 'true')
+	console.log("Got a request")
 	const { query } = c.req.query()
-	if (!query) {
+	if (query === "undefined" || !query) {
+		console.log("No query provided")
 		c.status(400)
 		return c.json({ success: false, message: 'No query provided' })
 	}
-	const song = await fetch(`http://www.last.fm/api/2.0/?method=track.search&track=${query}&api_key=${env.LASTFM_KEY}&format=json`).then(async r => {
+	console.log("Got a query", typeof query)
+	const song = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY}&format=json`).then(async r => {
 		const data = await r.json()
-		if (data.error) {
+		if(data.error){
 			return { success: false, message: data.message }
 		}
 		return { success: true, data }
 	})
-	if(!song.success){
+	console.log(song)
+	if (!song.success) {
 		c.status(400)
 		return c.json({ success: false, message: song.message })
 	}
-	return c.json({ song:song.data, success: true })
+	return c.json({ song:song.data.results.trackmatches.track, success: true })
 })
 
 app.post('/scrobble', async c => {
+	c.header('Access-Control-Allow-Origin', '*')
+	c.header('Access-Control-Allow-Credentials', 'true')
 	const { user, artist, track, album, timestamp } = Object.fromEntries(await c.req.formData()) as {
 		user: string
 		artist: string
@@ -148,7 +160,7 @@ app.post('/scrobble', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'No user, artist, track, album, or timestamp provided' })
 	}
-	const res = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_KEY}&api_sig=${md5.update(`api_key${env.LASTFM_KEY}methodauth.getSessiontoken${user}${env.LASTFM_SECRET}`)}&sk=${user}&format=json`, {
+	const res = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY}methodauth.getSessiontoken${user}${env.LASTFM_SECRET}`)}&sk=${user}&format=json`, {
 		method: 'POST'
 	})
 	const data = await res.json()
