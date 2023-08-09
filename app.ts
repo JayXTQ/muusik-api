@@ -9,12 +9,14 @@ import {
 	DiscordGatewayAdapterCreator
 } from '@discordjs/voice';
 
+import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
+
 // import { DisTube } from 'distube'
 // import { SpotifyPlugin } from '@distube/spotify'
 
 import { REST } from '@discordjs/rest'
-import { WebSocketManager } from '@discordjs/ws'
-import { GatewayIntentBits, Client, GatewayDispatchEvents, APITextChannel, APIGuild } from '@discordjs/core'
+import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws'
+import { GatewayIntentBits, Client, GatewayDispatchEvents, APITextChannel, APIGuild, ApplicationCommandType, APIApplicationCommandInteraction, InteractionType } from '@discordjs/core'
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 
 const md5 = new Md5()
@@ -31,21 +33,67 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway })
 
-// const distube = new DisTube(client, {
-// 	emitNewSongOnly: true,
-// 	leaveOnFinish: true,
-// 	leaveOnEmpty: true,
-// 	emitAddSongWhenCreatingQueue: false,
-// 	plugins: [new SpotifyPlugin()]
-// })
-
 const voiceStates = new Map<string, string>()
+
+let onlineSince: number;
+let latency: number | string = "Not available";
 
 client.on(GatewayDispatchEvents.VoiceStateUpdate, i => {
 	if (i.data.channel_id) {
 		voiceStates.set(i.data.user_id, i.data.channel_id)
 	} else {
 		voiceStates.delete(i.data.user_id)
+	}
+})
+
+client.on(GatewayDispatchEvents.Ready, () => {
+	onlineSince = Date.now()
+	client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
+		name: "info",
+		description: "Get information regarding the bot",
+		dm_permission: false
+	})
+})
+
+gateway.on(WebSocketShardEvents.HeartbeatComplete, i => {
+	latency = i.latency
+})
+
+client.on(GatewayDispatchEvents.InteractionCreate, async i => {
+	if (i.data.type === InteractionType.ApplicationCommand && isChatInputApplicationCommandInteraction(i.data)) {
+		switch(i.data.data.name){
+			case "info":
+				i.api.interactions.reply(i.data.id, i.data.token, {
+					"embeds": [
+						{
+							"title": `Muusik Information`,
+							"description": `Information regarding the official bot for [muusik.app](https://muusik.app)`,
+							"color": 0x3A015C,
+							"fields": [
+								{
+									"name": `Engines`,
+									"value": `Deno (API): v1.36.0\n@discordjs/core: v1.0.0\n@discordjs/ws: v1.0.0\n@discordjs/rest: v2.0.0`,
+									"inline": true
+								},
+								{
+									"name": `Avg. Heartbeat`,
+									"value": String(latency),
+									"inline": true
+								},
+								{
+									"name": `Shards`,
+									"value": String(await client.gateway.getShardCount()),
+									"inline": true
+								},
+								{
+									"name": `Online since`,
+									"value": `<t:${Math.floor(onlineSince/1000)}:R>`
+								}
+							]
+						}
+					]
+				})
+		}
 	}
 })
 
