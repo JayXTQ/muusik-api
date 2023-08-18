@@ -3,11 +3,11 @@ const env = await load()
 
 import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 
-import {
-	joinVoiceChannel,
-	getVoiceConnection,
-	DiscordGatewayAdapterCreator
-} from '@discordjs/voice';
+// import {
+// 	joinVoiceChannel,
+// 	getVoiceConnection,
+// 	DiscordGatewayAdapterCreator
+// } from '@discordjs/voice';
 
 import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
 
@@ -16,8 +16,10 @@ import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/
 
 import { REST } from '@discordjs/rest'
 import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws'
-import { GatewayIntentBits, Client, GatewayDispatchEvents, APITextChannel, APIGuild, ApplicationCommandType, APIApplicationCommandInteraction, InteractionType } from '@discordjs/core'
+import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType } from '@discordjs/core'
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
+import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
+import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 const md5 = new Md5()
 
@@ -171,27 +173,43 @@ app.get('/callback/:type', c => {
 app.get('/find-song', async c => {
 	c.header('Access-Control-Allow-Origin', '*')
 	c.header('Access-Control-Allow-Credentials', 'true')
-	console.log("Got a request")
 	const { query } = c.req.query()
 	if (query === "undefined" || !query) {
 		console.log("No query provided")
 		c.status(400)
 		return c.json({ success: false, message: 'No query provided' })
 	}
-	console.log("Got a query", typeof query)
-	const song = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY}&format=json`).then(async r => {
-		const data = await r.json()
-		if(data.error){
+	const song = await axiod.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY}&format=json`).then(async r => {
+		const data = await r.data()
+		if(r.status !== 200){
 			return { success: false, message: data.message }
 		}
 		return { success: true, data }
 	})
-	console.log(song)
 	if (!song.success) {
 		c.status(400)
 		return c.json({ success: false, message: song.message })
 	}
-	return c.json({ song:song.data.results.trackmatches.track, success: true })
+	const tracks = song.data.results.trackmatches
+
+	for (let i = 0; i < tracks.track.length; i++) {
+		axiod.get(tracks[i].url).then(async r => {
+			const data = await r.data()
+			if(r.status !== 200){
+				return { success: false, message: data.message }
+			}
+			const $ = cheerio.load(data)
+			const playlinks = $('a.play-this-track-playlink')
+			const links = []
+			for (const link of playlinks) {
+				if(!link.attribs.href.includes(('spotify' || 'youtube')))
+					links.push(link.attribs.href)
+			}
+			tracks[i].links = links
+		})
+	}
+
+	return c.json({ tracks, success: true })
 })
 
 app.post('/scrobble', async c => {
@@ -208,11 +226,9 @@ app.post('/scrobble', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'No user, artist, track, album, or timestamp provided' })
 	}
-	const res = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY}methodauth.getSessiontoken${user}${env.LASTFM_SECRET}`)}&sk=${user}&format=json`, {
-		method: 'POST'
-	})
-	const data = await res.json()
-	if (data.error) {
+	const res = await axiod.post(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY}methodauth.getSessiontoken${user}${env.LASTFM_SECRET}`)}&sk=${user}&format=json`)
+	const data = await res.data()
+	if (res.status !== 200) {
 		c.status(400)
 		return c.json({ success: false, message: data.message })
 	}
