@@ -29,7 +29,7 @@ jobs:
           node-version: lts/*
 
       - name: Build step
-        run: 'npm install && PORT="8000" TOKEN="${{ secrets.TOKEN }}" deno run --allow-all app.ts' # 📝 Update the build command(s) if necessary
+        run: 'deno cache app.ts' # 📝 Update the build command(s) if necessary
 
       - name: Upload to Deno Deploy
         uses: denoland/deployctl@v1
