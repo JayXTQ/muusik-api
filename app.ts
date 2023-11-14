@@ -172,38 +172,36 @@ app.get('/find-song', async c => {
 	c.header('Access-Control-Allow-Credentials', 'true')
 	const { query } = c.req.query()
 	if (query === "undefined" || !query) {
-		console.log("No query provided")
 		c.status(400)
 		return c.json({ success: false, message: 'No query provided' })
 	}
-	const song = await axiod.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string}&format=json`).then(async r => {
-		const data = await r.data()
+	const song = await axiod.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string}&format=json`).then(r => {
 		if(r.status !== 200){
-			return { success: false, message: data.message }
+			return { success: false, status: r.status }
 		}
-		return { success: true, data }
+		return { success: true, data: r.data.results }
 	})
 	if (!song.success) {
 		c.status(400)
-		return c.json({ success: false, message: song.message })
+		return c.json({ success: false, message: song.status })
 	}
-	console.log(song)
-	const tracks = song.data.results.trackmatches
+
+	const tracks = song.data.trackmatches
 
 	for (let i = 0; i < tracks.track.length; i++) {
-		axiod.get(tracks[i].url).then(async r => {
-			const data = await r.data()
+		await axiod.get(tracks.track[i].url).then(r => {
+			const data = r.data
 			if(r.status !== 200){
 				return { success: false, message: data.message }
 			}
 			const $ = cheerio.load(data)
 			const playlinks = $('a.play-this-track-playlink')
-			const links = []
+			const links: string[] = []
 			for (const link of playlinks) {
-				if(!link.attribs.href.includes(('spotify' || 'youtube')))
+				if(link.attribs.href.includes(('spotify' || 'youtube')) && !links.includes(link.attribs.href))
 					links.push(link.attribs.href)
 			}
-			tracks[i].links = links
+			tracks.track[i].links = links
 		})
 	}
 
