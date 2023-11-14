@@ -187,6 +187,7 @@ app.get('/find-song', async c => {
 		c.status(400)
 		return c.json({ success: false, message: song.message })
 	}
+	console.log(song)
 	const tracks = song.data.results.trackmatches
 
 	for (let i = 0; i < tracks.track.length; i++) {
