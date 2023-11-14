@@ -1,5 +1,5 @@
 import { load } from "https://deno.land/std@0.196.0/dotenv/mod.ts";
-const env = await load()
+const env = await load() as Record<string, string | undefined>
 
 import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 
@@ -107,10 +107,7 @@ type Variables = {
 
 const app = new Hono<{ Variables: Variables }>({strict:false})
 
-app.get('/', c => c.redirect('//muusik.app'))
-
-app.get('/login', c => 
-	c.redirect(`https://discord.com/api/oauth2/authorize?client_id=1137124050792087682&redirect_uri=https%3A%2F%2Fmuusik.app%2Fdashboard&response_type=token&scope=identify%20guilds`))
+app.get('/', c => c.redirect('https://muusik.app'))
 
 app.get('/find-user', async c => {
 	c.header('Access-Control-Allow-Origin', '*')
@@ -165,7 +162,7 @@ app.post('/play', async c => {
 app.get('/callback/:type', c => {
 	const { type } = c.req.param()
 	if (type === 'lastfm') {
-		return c.redirect(`https://www.last.fm/api/auth/?api_key=${env.LASTFM_KEY}`)
+		return c.redirect(`https://www.last.fm/api/auth/?api_key=${env.LASTFM_KEY || Deno.env.get("LASTFM_API_KEY") as string}`)
 	}
 	return c.json({ success: true })
 })
@@ -179,7 +176,7 @@ app.get('/find-song', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'No query provided' })
 	}
-	const song = await axiod.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY}&format=json`).then(async r => {
+	const song = await axiod.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string}&format=json`).then(async r => {
 		const data = await r.data()
 		if(r.status !== 200){
 			return { success: false, message: data.message }
@@ -226,7 +223,7 @@ app.post('/scrobble', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'No user, artist, track, album, or timestamp provided' })
 	}
-	const res = await axiod.post(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY}methodauth.getSessiontoken${user}${env.LASTFM_SECRET}`)}&sk=${user}&format=json`)
+	const res = await axiod.post(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY || Deno.env.get(`LASTFM_API_KEY`) as string}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string}methodauth.getSessiontoken${user}${env.LASTFM_SECRET || Deno.env.get(`LASTFM_SECRET`) as string}`)}&sk=${user}&format=json`)
 	const data = await res.data()
 	if (res.status !== 200) {
 		c.status(400)
