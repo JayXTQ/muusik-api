@@ -14,16 +14,16 @@ import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/
 // import { DisTube } from 'distube'
 // import { SpotifyPlugin } from '@distube/spotify'
 
-import { REST } from '@discordjs/rest'
-import { WebSocketManager, WebSocketShardEvents } from '@discordjs/ws'
-import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType } from '@discordjs/core'
+import { REST } from 'npm:@discordjs/rest'
+import { WebSocketManager, WebSocketShardEvents } from 'npm:@discordjs/ws'
+import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType } from 'npm:@discordjs/core'
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
 const md5 = new Md5()
 
-import 'bufferutil'
+import 'npm:bufferutil'
 
 const rest = new REST().setToken(env.TOKEN)
 
