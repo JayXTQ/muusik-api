@@ -25,10 +25,10 @@ const md5 = new Md5()
 
 import 'npm:bufferutil'
 
-const rest = new REST().setToken(env.TOKEN)
+const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string)
 
 const gateway = new WebSocketManager({
-	token: env.TOKEN || Deno.env.get("TOKEN"),
+	token: env.TOKEN || Deno.env.get("TOKEN") as string,
 	intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers | GatewayIntentBits.GuildVoiceStates,
 	rest
 })
@@ -235,4 +235,4 @@ app.post('/scrobble', async c => {
 	return c.json({ success: true })
 })
 
-Deno.serve({ port: +(env.PORT || Deno.env.get("PORT")) }, app.fetch)
+Deno.serve({ port: +(env.PORT || Deno.env.get("PORT") as string) }, app.fetch)
