@@ -28,7 +28,7 @@ import 'npm:bufferutil'
 const rest = new REST().setToken(env.TOKEN)
 
 const gateway = new WebSocketManager({
-	token: env.TOKEN,
+	token: env.TOKEN || Deno.env.get("TOKEN"),
 	intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers | GatewayIntentBits.GuildVoiceStates,
 	rest
 })
@@ -235,4 +235,4 @@ app.post('/scrobble', async c => {
 	return c.json({ success: true })
 })
 
-Deno.serve({ port: +env.PORT }, app.fetch)
+Deno.serve({ port: +(env.PORT || Deno.env.get("PORT")) }, app.fetch)
