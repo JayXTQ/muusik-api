@@ -35,14 +35,14 @@ const gateway = new WebSocketManager({
 
 const client = new Client({ rest, gateway })
 
-const voiceStates = new Map<string, string>()
+const voiceStates = new Map<string, { guild_id: string; channel_id: string }>()
 
 let onlineSince: number;
 let latency: number | string = "Not available";
 
 client.on(GatewayDispatchEvents.VoiceStateUpdate, i => {
-	if (i.data.channel_id) {
-		voiceStates.set(i.data.user_id, i.data.channel_id)
+	if (i.data.channel_id && i.data.guild_id) {
+		voiceStates.set(i.data.user_id, { guild_id: i.data.guild_id, channel_id: i.data.channel_id })
 	} else {
 		voiceStates.delete(i.data.user_id)
 	}
@@ -124,7 +124,7 @@ app.get('/find-user', async c => {
 			c.status(400)
 			return c.json({ success: false, message: 'User not in a voice channel' })
 		}
-		channel = await client.api.channels.get(channel_)
+		channel = await client.api.channels.get(channel_.channel_id)
 	} catch (_) {
 		c.status(400)
 		return c.json({ success: false, message: 'User not in a voice channel' })
