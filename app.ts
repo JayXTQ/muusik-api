@@ -3,11 +3,11 @@ const env = await load() as Record<string, string | undefined>
 
 import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 
-// import {
-// 	joinVoiceChannel,
-// 	getVoiceConnection,
-// 	DiscordGatewayAdapterCreator
-// } from '@discordjs/voice';
+import {
+	// joinVoiceChannel,
+	// getVoiceConnection,
+	// DiscordGatewayAdapterCreator
+} from 'npm:@discordjs/voice';
 
 import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
 
@@ -21,6 +21,9 @@ import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 const md5 = new Md5()
 
 import 'npm:bufferutil'
+import { 
+	// APITextChannel
+} from "npm:discord-api-types/v10";
 
 const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string)
 
@@ -147,11 +150,14 @@ app.post('/play', async c => {
 		c.status(400)
 		return c.json({ success: false, message: 'User not in a voice channel' })
 	}
-	// const channel = await client.api.channels.get(state) as APITextChannel
+	// const channel = await client.api.channels.get(state.channel_id) as APITextChannel
 	// joinVoiceChannel({
 	// 	channelId: channel.id,
 	// 	guildId: guild.id,
-	// 	adapterCreator: guild.voiceAdapterCreator as DiscordGatewayAdapterCreator,
+	// 	adapterCreator: {
+	// 		type: 'websocket',
+	// 		debug: true	
+	// 	},
 	// 	selfDeaf: true,
 	// })
 })
@@ -169,6 +175,8 @@ app.get('/find-song', async c => {
 	c.header('Access-Control-Allow-Origin', '*')
 	c.header('Access-Control-Allow-Credentials', 'true')
 	const { query } = c.req.query()
+	let { limit } = c.req.query() as { limit: string | number }
+	limit = limit ? parseInt(limit as string) : Infinity
 	if (query === "undefined" || !query) {
 		c.status(400)
 		return c.json({ success: false, message: 'No query provided' })
@@ -186,7 +194,9 @@ app.get('/find-song', async c => {
 
 	const tracks = song.data.trackmatches
 
-	for (let i = 0; i < tracks.track.length; i++) {
+	const searchLimit = (limit >= tracks.track.length) ? tracks.track.length : limit
+
+	for (let i = 0; i < searchLimit; i++) {
 		await axiod.get(tracks.track[i].url).then(r => {
 			const data = r.data
 			if(r.status !== 200){
