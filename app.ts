@@ -75,7 +75,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, async i => {
 							"fields": [
 								{
 									"name": `Engines`,
-									"value": `Deno (API): v${JSON.stringify(Deno.version)}\n@discordjs/core: v${coreversion}\n@discordjs/ws: v${wsversion}\n@discordjs/rest: v${restversion}\n@discordjs/voice: v${voiceversion}`,
+									"value": `Deno (API): ${Deno.version.deno === "" ? `Unknown` : `v${Deno.version.deno}`}\n@discordjs/core: v${coreversion}\n@discordjs/ws: v${wsversion}\n@discordjs/rest: v${restversion}\n@discordjs/voice: v${voiceversion}`,
 									"inline": true
 								},
 								{
