@@ -11,9 +11,6 @@ import { Hono } from 'https://deno.land/x/hono@v3.3.1/mod.ts'
 
 import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
 
-// import { DisTube } from 'distube'
-// import { SpotifyPlugin } from '@distube/spotify'
-
 import { REST } from 'npm:@discordjs/rest'
 import { WebSocketManager, WebSocketShardEvents } from 'npm:@discordjs/ws'
 import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType } from 'npm:@discordjs/core'
