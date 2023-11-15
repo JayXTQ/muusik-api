@@ -1,3 +1,5 @@
+const dev = Deno.env.get("DENO_DEPLOYMENT_ID") === undefined
+
 import { load } from "https://deno.land/std@0.196.0/dotenv/mod.ts";
 const env = await load() as Record<string, string | undefined>
 
@@ -167,7 +169,7 @@ app.get('/auth/:type', c => {
 	const { type } = c.req.param()
 	switch(type){
 		case 'lastfm':
-			return c.redirect(`https://www.last.fm/api/auth/?api_key=${encodeURIComponent(env.LASTFM_KEY || Deno.env.get("LASTFM_API_KEY") as string)}&cb=${encodeURIComponent('https://muusik.app/callback/lastfm')}`)
+			return c.redirect(`https://www.last.fm/api/auth/?api_key=${encodeURIComponent(env.LASTFM_KEY || Deno.env.get("LASTFM_API_KEY") as string)}&cb=${encodeURIComponent(`http${dev ? '://localhost:5713' : 's://muusik.app'}/callback/lastfm`)}`)
 	}
 	return c.json({ success: false })
 })
