@@ -156,12 +156,13 @@ app.post('/play', async c => {
 	// })
 })
 
-app.get('/callback/:type', c => {
+app.get('/auth/:type', c => {
 	const { type } = c.req.param()
-	if (type === 'lastfm') {
-		return c.redirect(`https://www.last.fm/api/auth/?api_key=${env.LASTFM_KEY || Deno.env.get("LASTFM_API_KEY") as string}`)
+	switch(type){
+		case 'lastfm':
+			return c.redirect(`https://www.last.fm/api/auth/?api_key=${encodeURIComponent(env.LASTFM_KEY || Deno.env.get("LASTFM_API_KEY") as string)}&cb=${encodeURIComponent('https://muusik.app/callback/lastfm')}`)
 	}
-	return c.json({ success: true })
+	return c.json({ success: false })
 })
 
 app.get('/find-song', async c => {
@@ -220,10 +221,9 @@ app.post('/scrobble', async c => {
 		return c.json({ success: false, message: 'No user, artist, track, album, or timestamp provided' })
 	}
 	const res = await axiod.post(`http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${Math.floor(Date.now() / 1000)}&api_key=${env.LASTFM_API_KEY || Deno.env.get(`LASTFM_API_KEY`) as string}&api_sig=${md5.update(`api_key${env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string}methodauth.getSessiontoken${user}${env.LASTFM_SECRET || Deno.env.get(`LASTFM_SECRET`) as string}`)}&sk=${user}&format=json`)
-	const data = await res.data()
 	if (res.status !== 200) {
 		c.status(400)
-		return c.json({ success: false, message: data.message })
+		return c.json({ success: false, status: res.status })
 	}
 	return c.json({ success: true })
 })
