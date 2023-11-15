@@ -7,13 +7,14 @@ import {
 	// joinVoiceChannel,
 	// getVoiceConnection,
 	// DiscordGatewayAdapterCreator
+	version as voiceversion
 } from 'npm:@discordjs/voice';
 
 import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
 
-import { REST } from 'npm:@discordjs/rest'
-import { WebSocketManager, WebSocketShardEvents } from 'npm:@discordjs/ws'
-import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType } from 'npm:@discordjs/core'
+import { REST, version as restversion } from 'npm:@discordjs/rest'
+import { WebSocketManager, WebSocketShardEvents, version as wsversion } from 'npm:@discordjs/ws'
+import { GatewayIntentBits, Client, GatewayDispatchEvents, APIGuild, InteractionType, version as coreversion } from 'npm:@discordjs/core'
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
@@ -74,7 +75,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, async i => {
 							"fields": [
 								{
 									"name": `Engines`,
-									"value": `Deno (API): v1.36.0\n@discordjs/core: v1.0.0\n@discordjs/ws: v1.0.0\n@discordjs/rest: v2.0.0`,
+									"value": `Deno (API): v${Deno.version.deno}\n@discordjs/core: v${coreversion}\n@discordjs/ws: v${wsversion}\n@discordjs/rest: v${restversion}\n@discordjs/voice: v${voiceversion}`,
 									"inline": true
 								},
 								{
