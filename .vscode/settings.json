@@ -4,5 +4,7 @@
     ],
     "deno.enable": true,
     "editor.inlayHints.enabled": "off",
-    "deno.unstable": true
+    "deno.unstable": true,
+    "prettier.tabWidth": 4,
+    "prettier.singleQuote": true
 }
