@@ -35,9 +35,6 @@ import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 const md5 = new Md5();
 
 import "npm:bufferutil";
-import {
-    // APITextChannel
-} from "npm:discord-api-types/v10";
 
 const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
 
@@ -72,6 +69,27 @@ client.on(GatewayDispatchEvents.Ready, () => {
         name: "info",
         description: "Get information regarding the bot",
         dm_permission: false,
+    });
+    client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
+        name: 'config',
+        description: 'Configure the bot',
+        dm_permission: false,
+        options: [
+            {
+                type: 1,
+                name: 'dj',
+                description: 'The role to use for bypassing limitations',
+                options: [
+                    {
+                        type: 8,
+                        name: 'role',
+                        description: 'The role to use for DJ permissions',
+                        required: true
+                    }
+                ]
+            }
+        ],
+        default_member_permissions: "0"
     });
 });
 
@@ -125,6 +143,47 @@ client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
                         },
                     ],
                 });
+                break;
+            case "config": {
+                if(checkIfPermission(i.data.member?.permissions as string, 0x8) === false) {
+                    type ConfigOptions = {
+                        type: number;
+                        options: Array<{
+                            type: number;
+                            name: string;
+                            value: string | number | boolean;
+                        }>;
+                        name: string;
+                    }
+                    const options = (i.data.data.options as ConfigOptions[])[0] as ConfigOptions;
+                    switch (options.name) {
+                        case "dj": {
+                            // await axiod.post(`http${
+                            //     dev ? "://localhost:5173" : "s://muusik.app"
+                            // }/api/update-guild`, {
+                            //     type: "dj",
+                            //     guild: i.data.guild_id,
+                            //     value: options.options[0].value
+                            // }, {
+                            //     headers: {
+                            //         "Authorization": env.FRONTEND_API_KEY || Deno.env.get("FRONTEND_API_KEY") as string
+                            //     }
+                            // })
+                            break;
+                        }
+                    }
+                } else {
+                    i.api.interactions.reply(i.data.id, i.data.token, {
+                        "embeds": [
+                            {
+                                "title": `Config`,
+                                "description": `You do not have permission to use this command`,
+                                "color": 0x3A015C,
+                            },
+                        ],
+                    });
+                }
+            }
         }
     }
 });
@@ -367,6 +426,13 @@ function generateSigniture(method: string, token: string) {
             env.LASTFM_SECRET || Deno.env.get(`LASTFM_SECRET`) as string
         }`,
     ).toString();
+}
+
+function checkIfPermission(
+    permissions: number | string,
+    permission: number,
+): boolean {
+    return ((typeof permissions === "string" ? parseInt(permissions) : permissions) & permission) === permission;
 }
 
 Deno.serve({ port: +(env.PORT || Deno.env.get("PORT") as string) }, app.fetch);
