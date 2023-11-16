@@ -124,14 +124,15 @@ app.get('/find-user', async c => {
 	try {
 		const channel_ = voiceStates.get(user)
 		if (!channel_) {
-			c.status(400)
+			c.status(404)
 			return c.json({ success: false, message: 'User not in a voice channel' })
 		}
 		channel = await client.api.channels.get(channel_.channel_id)
 	} catch (_) {
-		c.status(400)
+		c.status(404)
 		return c.json({ success: false, message: 'User not in a voice channel' })
 	}
+	c.status(200)
 	return c.json({ channel, success: true }) 
 })
 
@@ -150,9 +151,10 @@ app.post('/play', async c => {
 	}
 	const state = voiceStates.get(user as string)
 	if (!state) {
-		c.status(400)
+		c.status(404)
 		return c.json({ success: false, message: 'User not in a voice channel' })
 	}
+	c.status(501)
 	// const channel = await client.api.channels.get(state.channel_id) as APITextChannel
 	// joinVoiceChannel({
 	// 	channelId: channel.id,
@@ -169,6 +171,7 @@ app.get('/auth/:type', c => {
 	const { type } = c.req.param()
 	switch(type){
 		case 'lastfm':
+			c.status(303)
 			return c.redirect(`https://www.last.fm/api/auth/?api_key=${encodeURIComponent(env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string)}&cb=${encodeURIComponent(`http${dev ? '://localhost:5173' : 's://muusik.app'}/callback/lastfm`)}`)
 	}
 	return c.json({ success: false })
@@ -177,7 +180,7 @@ app.get('/auth/:type', c => {
 app.get('/find-song', async c => {
 	c.header('Access-Control-Allow-Origin', '*')
 	c.header('Access-Control-Allow-Credentials', 'true')
-	const { query } = c.req.query()
+	const { query } = c.req.query() as { query: string }
 	let { limit } = c.req.query() as { limit: string | number }
 	limit = limit ? parseInt(limit as string) : Infinity
 	if (query === "undefined" || !query) {
@@ -200,22 +203,28 @@ app.get('/find-song', async c => {
 	const searchLimit = (limit >= tracks.track.length) ? tracks.track.length : limit
 
 	for (let i = 0; i < searchLimit; i++) {
-		await axiod.get(tracks.track[i].url).then(r => {
-			const data = r.data
-			if(r.status !== 200){
-				return { success: false, message: data.message }
-			}
-			const $ = cheerio.load(data)
-			const playlinks = $('a.play-this-track-playlink')
-			const links: string[] = []
-			for (const link of playlinks) {
-				if(link.attribs.href.includes(('spotify' || 'youtube')) && !links.includes(link.attribs.href))
-					links.push(link.attribs.href)
-			}
-			tracks.track[i].links = links
-		})
+		try{
+			await axiod.get(tracks.track[i].url).then(r => {
+				const data = r.data
+				if(r.status !== 200){
+					return { success: false, message: data.message }
+				}
+				const $ = cheerio.load(data)
+				const playlinks = $('a.play-this-track-playlink')
+				const links: string[] = []
+				for (const link of playlinks) {
+					if(link.attribs.href.includes(('spotify' || 'youtube')) && !links.includes(link.attribs.href))
+						links.push(link.attribs.href)
+				}
+				tracks.track[i].links = links
+			})
+		} catch(_) {
+			tracks.track[i].links = []
+		}
 	}
 
+	tracks.track = tracks.track.slice(0, searchLimit)
+	c.status(200)
 	return c.json({ tracks, success: true })
 })
 
@@ -238,6 +247,7 @@ app.post('/scrobble', async c => {
 		c.status(400)
 		return c.json({ success: false, status: res.status })
 	}
+	c.status(200)
 	return c.json({ success: true })
 })
 
@@ -256,6 +266,7 @@ app.get('/session/:type/:token', async c => {
 			if(session.status !== 200){
 				return c.json({ success: false, status: session.status })
 			} else {
+				c.status(200)
 				return c.json({ success: true, data: session.data })
 			}
 		}
