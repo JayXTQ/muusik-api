@@ -22,6 +22,7 @@ import {
 } from "npm:@discordjs/ws";
 import {
     APIGuild,
+    APIRole,
     Client,
     GatewayDispatchEvents,
     GatewayIntentBits,
@@ -387,10 +388,11 @@ app.post("/scrobble", async (c) => {
     return c.json({ success: true });
 });
 
-app.get("/session/:type/:token", async (c) => {
+app.get("/session/:type", async (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
-    const { type, token } = c.req.param();
+    const { type } = c.req.param();
+    const { token } = c.req.query();
     switch (type) {
         case "lastfm": {
             let session;
@@ -418,6 +420,51 @@ app.get("/session/:type/:token", async (c) => {
     return c.json({ success: false });
 });
 
+app.get("/get-roles", async (c) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { guild } = c.req.query();
+    if (!guild) {
+        c.status(400);
+        return c.json({ success: false, message: "No guild provided" });
+    }
+    const roles = (await client.api.guilds.get(guild)).roles;
+    if (!roles) {
+        c.status(404);
+        return c.json({ success: false, message: "No roles found" });
+    }
+    c.status(200);
+    return c.json({ success: true, roles });
+})
+
+app.get("/check-permissions", async (c) =>{
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { guild, user, permission } = c.req.query();
+    if (!guild || !user) {
+        c.status(400);
+        return c.json({ success: false, message: "No guild or user provided" });
+    }
+    const member = await client.api.guilds.getMember(guild, user);
+    if (!member) {
+        c.status(404);
+        return c.json({ success: false, message: "Member not found" });
+    }
+    let hasPermission = false;
+    for(let role of member.roles as string[] | APIRole[]) {
+        role = (await client.api.guilds.get(guild)).roles.find(r => r.id === role) as APIRole;
+        if(checkIfPermission(role.permissions as string, permission)) {
+            hasPermission = true;
+        }
+    }
+    if(!hasPermission) {
+        c.status(403);
+        return c.json({ success: false, message: "Member does not have permission" });
+    }
+    c.status(200);
+    return c.json({ success: true });
+})
+
 function generateSigniture(method: string, token: string) {
     return md5.update(
         `api_key${
@@ -430,9 +477,11 @@ function generateSigniture(method: string, token: string) {
 
 function checkIfPermission(
     permissions: number | string,
-    permission: number,
+    permission: number | string,
 ): boolean {
-    return ((typeof permissions === "string" ? parseInt(permissions) : permissions) & permission) === permission;
+    permissions = typeof permissions === "string" ? parseInt(permissions) : permissions;
+    permission = typeof permission === "string" ? parseInt(permission) : permission;
+    return (permissions & permission) === permission;
 }
 
 Deno.serve({ port: +(env.PORT || Deno.env.get("PORT") as string) }, app.fetch);
