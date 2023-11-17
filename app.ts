@@ -202,7 +202,7 @@ app.get("/", (c) => c.redirect("https://muusik.app"));
 app.get("/find-user", async (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = await c.req.json();
+    const { user } = c.req.query();
     if (!user) {
         c.status(400);
         return c.json({ success: false, message: "No user provided" });
@@ -232,17 +232,15 @@ app.get("/find-user", async (c) => {
 app.post("/play", async (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
-    let { url, user, guild } = Object.fromEntries(await c.req.formData()) as {
+    const { url, user } = await c.req.json() as {
         url: string;
         user: string;
-        guild: string | APIGuild;
     };
-    guild = await client.api.guilds.get(guild as string) as APIGuild;
-    if (!url || !user || !guild) {
+    if (!url || !user) {
         c.status(400);
         return c.json({
             success: false,
-            message: "No url, user, or guild provided",
+            message: "No url or user provided",
         });
     }
     const state = voiceStates.get(user as string);
@@ -355,9 +353,7 @@ app.get("/find-song", async (c) => {
 app.post("/scrobble", async (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
-    const { user, artist, track, album, timestamp } = Object.fromEntries(
-        await c.req.formData(),
-    ) as {
+    const { user, artist, track, album, timestamp } = await c.req.json() as {
         user: string;
         artist: string;
         track: string;
