@@ -161,7 +161,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
                                 {
                                     "name": `/info`,
                                     "value":
-                                        `Get information regarding the bot\n**/help** - Get help with the muusik.app bot`,
+                                        `Get information regarding the bot`,
                                 },
                                 {
                                     "name": `/help`,
