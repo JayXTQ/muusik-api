@@ -1,4 +1,4 @@
-const dev = Deno.env.get("DENO_DEPLOYMENT_ID") === undefined;
+const dev = Deno.env.get("DENO_DEPLOYMENT_ID") === undefined; // Checks if in development or production, using DENO_DEPLOYMENT_ID as a check. Deno Deploy sets this value, but local does not.
 
 import { load } from "https://deno.land/std@0.196.0/dotenv/mod.ts";
 const env = await load() as Record<string, string | undefined>;
@@ -21,7 +21,6 @@ import {
     WebSocketShardEvents,
 } from "npm:@discordjs/ws";
 import {
-    APIGuild,
     APIRole,
     Client,
     GatewayDispatchEvents,
