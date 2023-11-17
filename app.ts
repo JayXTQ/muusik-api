@@ -68,29 +68,34 @@ client.on(GatewayDispatchEvents.Ready, () => {
     client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
         name: "info",
         description: "Get information regarding the bot",
-        dm_permission: false,
+        dm_permission: true,
     });
     client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
-        name: 'config',
-        description: 'Configure the bot',
-        dm_permission: false,
-        options: [
-            {
-                type: 1,
-                name: 'dj',
-                description: 'The role to use for bypassing limitations',
-                options: [
-                    {
-                        type: 8,
-                        name: 'role',
-                        description: 'The role to use for DJ permissions',
-                        required: true
-                    }
-                ]
-            }
-        ],
-        default_member_permissions: "0"
+        name: "help",
+        description: "Get help with the muusik.app bot",
+        dm_permission: true,
     });
+    // client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
+    //     name: 'config',
+    //     description: 'Configure the bot',
+    //     dm_permission: false,
+    //     options: [
+    //         {
+    //             type: 1,
+    //             name: 'dj',
+    //             description: 'The role to use for bypassing limitations',
+    //             options: [
+    //                 {
+    //                     type: 8,
+    //                     name: 'role',
+    //                     description: 'The role to use for DJ permissions',
+    //                     required: true
+    //                 }
+    //             ]
+    //         }
+    //     ],
+    //     default_member_permissions: "0"
+    // });
 });
 
 gateway.on(WebSocketShardEvents.HeartbeatComplete, (i) => {
@@ -144,46 +149,70 @@ client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
                     ],
                 });
                 break;
-            case "config": {
-                if(checkIfPermission(i.data.member?.permissions as string, 0x8) === false) {
-                    type ConfigOptions = {
-                        type: number;
-                        options: Array<{
-                            type: number;
-                            name: string;
-                            value: string | number | boolean;
-                        }>;
-                        name: string;
-                    }
-                    const options = (i.data.data.options as ConfigOptions[])[0] as ConfigOptions;
-                    switch (options.name) {
-                        case "dj": {
-                            // await axiod.post(`http${
-                            //     dev ? "://localhost:5173" : "s://muusik.app"
-                            // }/api/update-guild`, {
-                            //     type: "dj",
-                            //     guild: i.data.guild_id,
-                            //     value: options.options[0].value
-                            // }, {
-                            //     headers: {
-                            //         "Authorization": env.FRONTEND_API_KEY || Deno.env.get("FRONTEND_API_KEY") as string
-                            //     }
-                            // })
-                            break;
-                        }
-                    }
-                } else {
-                    i.api.interactions.reply(i.data.id, i.data.token, {
-                        "embeds": [
-                            {
-                                "title": `Config`,
-                                "description": `You do not have permission to use this command`,
-                                "color": 0x3A015C,
-                            },
-                        ],
-                    });
-                }
-            }
+            case "help":
+                i.api.interactions.reply(i.data.id, i.data.token, {
+                    "embeds": [
+                        {
+                            "title": `muusik.app`,
+                            "description":
+                                `Hello! I am the muusik.app bot written by [Jay](https://jayxtq.xyz). Thank you for using muusik.app! If you want to play music please use the [muusik.app website](https://muusik.app). For commands, check below!`,
+                            "color": 0x3A015C,
+                            "fields": [
+                                {
+                                    "name": `/info`,
+                                    "value":
+                                        `Get information regarding the bot\n**/help** - Get help with the muusik.app bot`,
+                                },
+                                {
+                                    "name": `/help`,
+                                    "value":
+                                        `Get help with the muusik.app bot`,
+                                }
+                            ],
+                        },
+                    ],
+                });
+                break;
+            // case "config": {
+            //     if(checkIfPermission(i.data.member?.permissions as string, 0x8) === false) {
+            //         type ConfigOptions = {
+            //             type: number;
+            //             options: Array<{
+            //                 type: number;
+            //                 name: string;
+            //                 value: string | number | boolean;
+            //             }>;
+            //             name: string;
+            //         }
+            //         const options = (i.data.data.options as ConfigOptions[])[0] as ConfigOptions;
+            //         switch (options.name) {
+            //             case "dj": {
+            //                 // await axiod.post(`http${
+            //                 //     dev ? "://localhost:5173" : "s://muusik.app"
+            //                 // }/api/update-guild`, {
+            //                 //     type: "dj",
+            //                 //     guild: i.data.guild_id,
+            //                 //     value: options.options[0].value
+            //                 // }, {
+            //                 //     headers: {
+            //                 //         "Authorization": env.FRONTEND_API_KEY || Deno.env.get("FRONTEND_API_KEY") as string
+            //                 //     }
+            //                 // })
+            //                 break;
+            //             }
+            //         }
+            //     } else {
+            //         i.api.interactions.reply(i.data.id, i.data.token, {
+            //             "embeds": [
+            //                 {
+            //                     "title": `Config`,
+            //                     "description": `You do not have permission to use this command`,
+            //                     "color": 0x3A015C,
+            //                 },
+            //             ],
+            //         });
+            //     }
+            // }
         }
     }
 });
