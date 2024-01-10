@@ -4,84 +4,49 @@ import { load } from "https://deno.land/std@0.196.0/dotenv/mod.ts";
 const env = await load() as Record<string, string | undefined>;
 
 import { Hono } from "https://deno.land/x/hono@v3.3.1/mod.ts";
-
-// import {
-//     // joinVoiceChannel,
-//     // getVoiceConnection,
-//     // DiscordGatewayAdapterCreator
-//     version as voiceversion,
-// } from "npm:@discordjs/voice";
-
-// import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
-
-// import { REST, version as restversion } from "npm:@discordjs/rest";
-// import {
-//     version as wsversion,
-//     WebSocketManager,
-//     WebSocketShardEvents,
-// } from "npm:@discordjs/ws";
-// import {
-//     APIRole,
-//     Client,
-//     GatewayDispatchEvents,
-//     GatewayIntentBits,
-//     InteractionType,
-//     version as coreversion,
-// } from "npm:@discordjs/core";
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 import "npm:mediaplex";
+import "npm:mediaplex-linux-x64-gnu";
 import "npm:@discord-player/extractor"
+import "npm:play-dl"
+import "npm:ffmpeg-static"
 
 const md5 = new Md5();
 
 import "npm:bufferutil";
 
 import { Player, useMainPlayer } from "npm:discord-player"
-import { Client, GatewayIntentBits, GatewayDispatchEvents, InteractionType, version, Guild, Role, GuildChannelResolvable, GuildVoiceChannelResolvable } from "npm:discord.js";
-
-// const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
-
-// const gateway = new WebSocketManager({
-//     token: env.TOKEN || Deno.env.get("TOKEN") as string,
-//     intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers |
-//         GatewayIntentBits.GuildVoiceStates,
-//     rest,
-// });
-
-// const client = new Client({ rest, gateway });
+import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, GuildVoiceChannelResolvable, Events, REST, Routes } from "npm:discord.js";
 
 const client = new Client({
-    intents: GatewayIntentBits.GuildVoiceStates |
-        GatewayIntentBits.Guilds |
-        GatewayIntentBits.GuildMembers,
+    intents: [GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMembers]
 });
 
-const player = new Player(client, {
-    ytdlOptions: {
-        quality: 'highestaudio',
-        highWaterMark: 1 << 25
-    }
-})
+const player = new Player(client, { ytdlOptions: { quality: "highestaudio", highWaterMark: 1 << 25 } })
 player.extractors.loadDefault()
 
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 
 let onlineSince: number;
 
-client.on(GatewayDispatchEvents.VoiceStateUpdate, (i) => {
-    if (i.data.channel_id && i.data.guild_id) {
-        voiceStates.set(i.data.user_id, {
-            guild_id: i.data.guild_id,
-            channel_id: i.data.channel_id,
+const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
+
+client.on(Events.VoiceStateUpdate, (oldState, newState) => {
+    if (newState.channelId && newState.guild.id) {
+        voiceStates.set(newState.id, {
+            guild_id: newState.guild.id,
+            channel_id: newState.channelId,
         });
     } else {
-        voiceStates.delete(i.data.user_id);
+        voiceStates.delete(oldState.id);
     }
 });
 
-client.on(GatewayDispatchEvents.Ready, () => {
+client.on(Events.ClientReady, async () => {
     onlineSince = Date.now();
     const commands = [
         {
@@ -96,38 +61,19 @@ client.on(GatewayDispatchEvents.Ready, () => {
         },
     ]
 
-    client.application?.commands.set(commands);
-
-    // client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
-    //     name: 'config',
-    //     description: 'Configure the bot',
-    //     dm_permission: false,
-    //     options: [
-    //         {
-    //             type: 1,
-    //             name: 'dj',
-    //             description: 'The role to use for bypassing limitations',
-    //             options: [
-    //                 {
-    //                     type: 8,
-    //                     name: 'role',
-    //                     description: 'The role to use for DJ permissions',
-    //                     required: true
-    //                 }
-    //             ]
-    //         }
-    //     ],
-    //     default_member_permissions: "0"
-    // });
+    await rest.put(
+        Routes.applicationCommands(env.CLIENT_ID || Deno.env.get("CLIENT_ID") as string),
+        { body: commands },
+    );
 });
 
-client.on(GatewayDispatchEvents.InteractionCreate, (i) => {
+client.on(Events.InteractionCreate, (i) => {
     if (
         i.type === InteractionType.ApplicationCommand
     ) {
-        switch (i.data.data.name) {
+        switch (i.commandName) {
             case "info":
-                i.api.interactions.reply(i.data.id, i.data.token, {
+                i.reply({
                     "embeds": [
                         {
                             "title": `Muusik Information`,
@@ -168,7 +114,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, (i) => {
                 });
                 break;
             case "help":
-                i.api.interactions.reply(i.data.id, i.data.token, {
+                i.reply({
                     "embeds": [
                         {
                             "title": `muusik.app`,
@@ -191,46 +137,6 @@ client.on(GatewayDispatchEvents.InteractionCreate, (i) => {
                     ],
                 });
                 break;
-            // case "config": {
-            //     if(checkIfPermission(i.data.member?.permissions as string, 0x8) === false) {
-            //         type ConfigOptions = {
-            //             type: number;
-            //             options: Array<{
-            //                 type: number;
-            //                 name: string;
-            //                 value: string | number | boolean;
-            //             }>;
-            //             name: string;
-            //         }
-            //         const options = (i.data.data.options as ConfigOptions[])[0] as ConfigOptions;
-            //         switch (options.name) {
-            //             case "dj": {
-            //                 // await axiod.post(`http${
-            //                 //     dev ? "://localhost:5173" : "s://muusik.app"
-            //                 // }/api/update-guild`, {
-            //                 //     type: "dj",
-            //                 //     guild: i.data.guild_id,
-            //                 //     value: options.options[0].value
-            //                 // }, {
-            //                 //     headers: {
-            //                 //         "Authorization": env.FRONTEND_API_KEY || Deno.env.get("FRONTEND_API_KEY") as string
-            //                 //     }
-            //                 // })
-            //                 break;
-            //             }
-            //         }
-            //     } else {
-            //         i.api.interactions.reply(i.data.id, i.data.token, {
-            //             "embeds": [
-            //                 {
-            //                     "title": `Config`,
-            //                     "description": `You do not have permission to use this command`,
-            //                     "color": 0x3A015C,
-            //                 },
-            //             ],
-            //         });
-            //     }
-            // }
         }
     }
 });
@@ -297,19 +203,11 @@ app.post("/play", async (c) => {
             message: "User not in a voice channel",
         });
     }
-    c.status(501);
     const player = useMainPlayer()
     const channel = client.channels.cache.get(state.channel_id) as GuildVoiceChannelResolvable;
-    player.play(channel, url)
-    // joinVoiceChannel({
-    // 	channelId: channel.id,
-    // 	guildId: guild.id,
-    // 	adapterCreator: {
-    // 		type: 'websocket',
-    // 		debug: true
-    // 	},
-    // 	selfDeaf: true,
-    // })
+    await player.play(channel, url)
+    c.status(200);
+    return c.json({ success: true });
 });
 
 app.get("/auth/:type", (c) => {
@@ -340,14 +238,14 @@ app.get("/find-song", async (c) => {
     c.header("Access-Control-Allow-Credentials", "true");
     const { query } = c.req.query() as { query: string };
     let { limit } = c.req.query() as { limit: string | number };
-    limit = limit ? parseInt(limit as string) : Infinity;
+    limit = limit ? parseInt(limit as string) : 10;
     if (query === "undefined" || !query) {
         c.status(400);
         return c.json({ success: false, message: "No query provided" });
     }
     const song = await axiod.get(
         `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${
-            encodeURIComponent(query)
+            encodeURIComponent(decodeURIComponent(query))
         }&api_key=${
             env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string
         }&format=json`,
@@ -368,35 +266,41 @@ app.get("/find-song", async (c) => {
         ? tracks.track.length
         : limit;
 
-    for (let i = 0; i < searchLimit; i++) {
-        try {
-            await axiod.get(tracks.track[i].url).then((r) => {
-                const data = r.data;
-                if (r.status !== 200) {
-                    return { success: false, message: data.message };
-                }
-                const $ = cheerio.load(data);
-                const playlinks = $("a.play-this-track-playlink");
-                const links: string[] = [];
-                for (const link of playlinks) {
-                    if (
-                        link.attribs.href.includes("spotify" || "youtube") &&
-                        !links.includes(link.attribs.href)
-                    ) {
-                        links.push(link.attribs.href);
-                    }
-                }
-                tracks.track[i].links = links;
-            });
-        } catch (_) {
-            tracks.track[i].links = [];
-        }
-    }
-
     tracks.track = tracks.track.slice(0, searchLimit);
     c.status(200);
     return c.json({ tracks, success: true });
 });
+
+app.get("/get-playlinks", async (c) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { url } = c.req.query() as { url: string };
+    let links: string[] = [];
+    try {
+        await axiod.get(decodeURIComponent(url)).then((r) => {
+            const data = r.data;
+            if (r.status !== 200) {
+                return { success: false, message: data.message };
+            }
+            const $ = cheerio.load(data);
+            const playlinks = $("a.play-this-track-playlink");
+            const links_: string[] = [];
+            for (const link of playlinks) {
+                if (
+                    link.attribs.href.includes("spotify" || "youtube") &&
+                    !links_.includes(link.attribs.href)
+                ) {
+                    links_.push(link.attribs.href);
+                }
+            }
+            links = links_;
+        });
+    } catch (_) {
+        links = [];
+    }
+    c.status(200);
+    return c.json({ links, success: true });
+})
 
 app.post("/scrobble", async (c) => {
     c.header("Access-Control-Allow-Origin", "*");
