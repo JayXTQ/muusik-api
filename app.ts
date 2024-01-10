@@ -5,52 +5,70 @@ const env = await load() as Record<string, string | undefined>;
 
 import { Hono } from "https://deno.land/x/hono@v3.3.1/mod.ts";
 
-import {
-    // joinVoiceChannel,
-    // getVoiceConnection,
-    // DiscordGatewayAdapterCreator
-    version as voiceversion,
-} from "npm:@discordjs/voice";
+// import {
+//     // joinVoiceChannel,
+//     // getVoiceConnection,
+//     // DiscordGatewayAdapterCreator
+//     version as voiceversion,
+// } from "npm:@discordjs/voice";
 
-import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
+// import { isChatInputApplicationCommandInteraction } from "npm:discord-api-types/utils";
 
-import { REST, version as restversion } from "npm:@discordjs/rest";
-import {
-    version as wsversion,
-    WebSocketManager,
-    WebSocketShardEvents,
-} from "npm:@discordjs/ws";
-import {
-    APIRole,
-    Client,
-    GatewayDispatchEvents,
-    GatewayIntentBits,
-    InteractionType,
-    version as coreversion,
-} from "npm:@discordjs/core";
+// import { REST, version as restversion } from "npm:@discordjs/rest";
+// import {
+//     version as wsversion,
+//     WebSocketManager,
+//     WebSocketShardEvents,
+// } from "npm:@discordjs/ws";
+// import {
+//     APIRole,
+//     Client,
+//     GatewayDispatchEvents,
+//     GatewayIntentBits,
+//     InteractionType,
+//     version as coreversion,
+// } from "npm:@discordjs/core";
 import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
 import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
 import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
+import "npm:mediaplex";
+import "npm:@discord-player/extractor"
 
 const md5 = new Md5();
 
 import "npm:bufferutil";
 
-const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
+import { Player, useMainPlayer } from "npm:discord-player"
+import { Client, GatewayIntentBits, GatewayDispatchEvents, InteractionType, version, Guild, Role, GuildChannelResolvable, GuildVoiceChannelResolvable } from "npm:discord.js";
 
-const gateway = new WebSocketManager({
-    token: env.TOKEN || Deno.env.get("TOKEN") as string,
-    intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers |
-        GatewayIntentBits.GuildVoiceStates,
-    rest,
+// const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
+
+// const gateway = new WebSocketManager({
+//     token: env.TOKEN || Deno.env.get("TOKEN") as string,
+//     intents: GatewayIntentBits.Guilds | GatewayIntentBits.GuildMembers |
+//         GatewayIntentBits.GuildVoiceStates,
+//     rest,
+// });
+
+// const client = new Client({ rest, gateway });
+
+const client = new Client({
+    intents: GatewayIntentBits.GuildVoiceStates |
+        GatewayIntentBits.Guilds |
+        GatewayIntentBits.GuildMembers,
 });
 
-const client = new Client({ rest, gateway });
+const player = new Player(client, {
+    ytdlOptions: {
+        quality: 'highestaudio',
+        highWaterMark: 1 << 25
+    }
+})
+player.extractors.loadDefault()
 
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 
 let onlineSince: number;
-let latency: number | string = "Not available";
 
 client.on(GatewayDispatchEvents.VoiceStateUpdate, (i) => {
     if (i.data.channel_id && i.data.guild_id) {
@@ -65,16 +83,21 @@ client.on(GatewayDispatchEvents.VoiceStateUpdate, (i) => {
 
 client.on(GatewayDispatchEvents.Ready, () => {
     onlineSince = Date.now();
-    client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
-        name: "info",
-        description: "Get information regarding the bot",
-        dm_permission: true,
-    });
-    client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
-        name: "help",
-        description: "Get help with the muusik.app bot",
-        dm_permission: true,
-    });
+    const commands = [
+        {
+            name: "info",
+            description: "Get information regarding the bot",
+            dm_permission: true,
+        },
+        {
+            name: "help",
+            description: "Get help with the muusik.app bot",
+            dm_permission: true,
+        },
+    ]
+
+    client.application?.commands.set(commands);
+
     // client.api.applicationCommands.createGlobalCommand("1137124050792087682", {
     //     name: 'config',
     //     description: 'Configure the bot',
@@ -98,14 +121,9 @@ client.on(GatewayDispatchEvents.Ready, () => {
     // });
 });
 
-gateway.on(WebSocketShardEvents.HeartbeatComplete, (i) => {
-    latency = i.latency;
-});
-
-client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
+client.on(GatewayDispatchEvents.InteractionCreate, (i) => {
     if (
-        i.data.type === InteractionType.ApplicationCommand &&
-        isChatInputApplicationCommandInteraction(i.data)
+        i.type === InteractionType.ApplicationCommand
     ) {
         switch (i.data.data.name) {
             case "info":
@@ -123,18 +141,18 @@ client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
                                         Deno.version.deno === ""
                                             ? `Unknown`
                                             : `v${Deno.version.deno}`
-                                    }\n@discordjs/core: v${coreversion}\n@discordjs/ws: v${wsversion}\n@discordjs/rest: v${restversion}\n@discordjs/voice: v${voiceversion}`,
+                                    }\n@discord.js: v${version}`,
                                     "inline": true,
                                 },
                                 {
                                     "name": `Avg. Heartbeat`,
-                                    "value": String(latency),
+                                    "value": String(client.ws.ping),
                                     "inline": true,
                                 },
                                 {
                                     "name": `Shards`,
                                     "value": String(
-                                        await client.gateway.getShardCount(),
+                                        client.shard?.count
                                     ),
                                     "inline": true,
                                 },
@@ -217,7 +235,7 @@ client.on(GatewayDispatchEvents.InteractionCreate, async (i) => {
     }
 });
 
-gateway.connect();
+client.login(env.TOKEN || Deno.env.get("TOKEN") as string);
 
 type Variables = {
     message: string;
@@ -245,7 +263,7 @@ app.get("/find-user", async (c) => {
                 message: "User not in a voice channel",
             });
         }
-        channel = await client.api.channels.get(channel_.channel_id);
+        channel = await client.channels.cache.get(channel_.channel_id);
     } catch (_) {
         c.status(404);
         return c.json({
@@ -280,7 +298,9 @@ app.post("/play", async (c) => {
         });
     }
     c.status(501);
-    // const channel = await client.api.channels.get(state.channel_id) as APITextChannel
+    const player = useMainPlayer()
+    const channel = client.channels.cache.get(state.channel_id) as GuildVoiceChannelResolvable;
+    player.play(channel, url)
     // joinVoiceChannel({
     // 	channelId: channel.id,
     // 	guildId: guild.id,
@@ -444,7 +464,7 @@ app.get("/session/:type", async (c) => {
     return c.json({ success: false });
 });
 
-app.get("/get-roles", async (c) => {
+app.get("/get-roles", (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
     const { guild } = c.req.query();
@@ -452,7 +472,7 @@ app.get("/get-roles", async (c) => {
         c.status(400);
         return c.json({ success: false, message: "No guild provided" });
     }
-    const roles = (await client.api.guilds.get(guild)).roles;
+    const roles = (client.guilds.cache.get(guild) as Guild).roles;
     if (!roles) {
         c.status(404);
         return c.json({ success: false, message: "No roles found" });
@@ -469,15 +489,15 @@ app.get("/check-permissions", async (c) =>{
         c.status(400);
         return c.json({ success: false, message: "No guild or user provided" });
     }
-    const member = await client.api.guilds.getMember(guild, user);
+    const member = await client.guilds.cache.get(guild)?.members.fetch(user)
     if (!member) {
         c.status(404);
         return c.json({ success: false, message: "Member not found" });
     }
     let hasPermission = false;
-    for(let role of member.roles as string[] | APIRole[]) {
-        role = (await client.api.guilds.get(guild)).roles.find(r => r.id === role) as APIRole;
-        if(checkIfPermission(role.permissions as string, permission)) {
+    for(let role of member.roles.cache.keys() as unknown as Role[] | string[]) {
+        role = (await client.guilds.cache.get(guild) as Guild).roles.cache.find(r => r.id === role) as Role;
+        if(checkIfPermission(role.permissions as unknown as string, permission)) {
             hasPermission = true;
         }
     }
