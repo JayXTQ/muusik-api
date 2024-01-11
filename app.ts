@@ -12,6 +12,7 @@ import "npm:mediaplex-linux-x64-gnu";
 import "npm:@discord-player/extractor"
 import "npm:play-dl"
 import "npm:ffmpeg-static"
+// import "npm:ffmpeg-binaries"
 
 const md5 = new Md5();
 
@@ -26,7 +27,7 @@ const client = new Client({
         GatewayIntentBits.GuildMembers]
 });
 
-const player = new Player(client, { ytdlOptions: { quality: "highestaudio", highWaterMark: 1 << 25 } })
+const player = new Player(client, { ytdlOptions: { quality: "highestaudio", highWaterMark: 1 << 25 }, skipFFmpeg: false })
 player.extractors.loadDefault()
 
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
