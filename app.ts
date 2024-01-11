@@ -152,7 +152,7 @@ const app = new Hono<{ Variables: Variables }>({ strict: false });
 
 app.get("/", (c) => c.redirect("https://muusik.app"));
 
-app.get("/find-user", async (c) => {
+app.get("/find-user", (c) => {
     c.header("Access-Control-Allow-Origin", "*");
     c.header("Access-Control-Allow-Credentials", "true");
     const { user } = c.req.query();
@@ -170,7 +170,7 @@ app.get("/find-user", async (c) => {
                 message: "User not in a voice channel",
             });
         }
-        channel = await client.channels.cache.get(channel_.channel_id);
+        channel = client.channels.cache.get(channel_.channel_id);
     } catch (_) {
         c.status(404);
         return c.json({
@@ -401,7 +401,7 @@ app.get("/check-permissions", async (c) =>{
     }
     let hasPermission = false;
     for(let role of member.roles.cache.keys() as unknown as Role[] | string[]) {
-        role = (await client.guilds.cache.get(guild) as Guild).roles.cache.find(r => r.id === role) as Role;
+        role = (client.guilds.cache.get(guild) as Guild).roles.cache.find(r => r.id === role) as Role;
         if(checkIfPermission(role.permissions as unknown as string, permission)) {
             hasPermission = true;
         }
