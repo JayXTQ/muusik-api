@@ -1,8 +1,4 @@
 {
-    "deno.enablePaths": [
-      "./"
-    ],
-    "deno.enable": true,
     "editor.inlayHints.enabled": "off",
     "deno.unstable": true,
     "prettier.tabWidth": 4,

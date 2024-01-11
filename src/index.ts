@@ -1,25 +1,15 @@
-const dev = Deno.env.get("DENO_DEPLOYMENT_ID") === undefined; // Checks if in development or production, using DENO_DEPLOYMENT_ID as a check. Deno Deploy sets this value, but local does not.
+import 'dotenv/config'
 
-import { load } from "https://deno.land/std@0.196.0/dotenv/mod.ts";
-const env = await load() as Record<string, string | undefined>;
+const dev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
 
-import { Hono } from "https://deno.land/x/hono@v3.3.1/mod.ts";
-import { Md5 } from "https://deno.land/std@0.119.0/hash/md5.ts";
-import axiod from "https://deno.land/x/axiod@0.26.2/mod.ts";
-import * as cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
-import "npm:mediaplex";
-import "npm:mediaplex-linux-x64-gnu";
-import "npm:@discord-player/extractor"
-import "npm:play-dl"
-import "npm:ffmpeg-static"
-// import "npm:ffmpeg-binaries"
+import { serve } from '@hono/node-server'
+import { Hono } from 'hono'
+import axios from "axios";
+import { createHash } from "crypto";
+import { load } from 'cheerio';
 
-const md5 = new Md5();
-
-import "npm:bufferutil";
-
-import { Player, useMainPlayer } from "npm:discord-player"
-import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, GuildVoiceChannelResolvable, Events, REST, Routes } from "npm:discord.js";
+import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, Events, REST, Routes, VoiceBasedChannel } from "discord.js";
+import { Player } from 'discord-player';
 
 const client = new Client({
     intents: [GatewayIntentBits.GuildVoiceStates,
@@ -27,14 +17,14 @@ const client = new Client({
         GatewayIntentBits.GuildMembers]
 });
 
-const player = new Player(client, { ytdlOptions: { quality: "highestaudio", highWaterMark: 1 << 25 }, skipFFmpeg: false })
-player.extractors.loadDefault()
+const player = new Player(client);
+player.extractors.loadDefault();
 
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 
 let onlineSince: number;
 
-const rest = new REST().setToken(env.TOKEN || Deno.env.get("TOKEN") as string);
+const rest = new REST().setToken(process.env.TOKEN as string);
 
 client.on(Events.VoiceStateUpdate, (oldState, newState) => {
     if (newState.channelId && newState.guild.id) {
@@ -63,7 +53,7 @@ client.on(Events.ClientReady, async () => {
     ]
 
     await rest.put(
-        Routes.applicationCommands(env.CLIENT_ID || Deno.env.get("CLIENT_ID") as string),
+        Routes.applicationCommands(process.env.CLIENT_ID as string),
         { body: commands },
     );
 });
@@ -84,11 +74,7 @@ client.on(Events.InteractionCreate, (i) => {
                             "fields": [
                                 {
                                     "name": `Engines`,
-                                    "value": `Deno (API): ${
-                                        Deno.version.deno === ""
-                                            ? `Unknown`
-                                            : `v${Deno.version.deno}`
-                                    }\n@discord.js: v${version}`,
+                                    "value": `Node.JS (API): ${process.version}\n@discord.js: v${version}`,
                                     "inline": true,
                                 },
                                 {
@@ -142,7 +128,7 @@ client.on(Events.InteractionCreate, (i) => {
     }
 });
 
-client.login(env.TOKEN || Deno.env.get("TOKEN") as string);
+client.login(process.env.TOKEN as string);
 
 type Variables = {
     message: string;
@@ -204,9 +190,12 @@ app.post("/play", async (c) => {
             message: "User not in a voice channel",
         });
     }
-    const player = useMainPlayer()
-    const channel = client.channels.cache.get(state.channel_id) as GuildVoiceChannelResolvable;
-    await player.play(channel, url)
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    try{
+      await player.play(channel, url, { requestedBy: user });
+    } catch(e) {
+      console.log(e)
+    }
     c.status(200);
     return c.json({ success: true });
 });
@@ -219,8 +208,7 @@ app.get("/auth/:type", (c) => {
             return c.redirect(
                 `https://www.last.fm/api/auth/?api_key=${
                     encodeURIComponent(
-                        env.LASTFM_API_KEY ||
-                            Deno.env.get("LASTFM_API_KEY") as string,
+                        process.env.LASTFM_API_KEY as string,
                     )
                 }&cb=${
                     encodeURIComponent(
@@ -244,11 +232,11 @@ app.get("/find-song", async (c) => {
         c.status(400);
         return c.json({ success: false, message: "No query provided" });
     }
-    const song = await axiod.get(
+    const song = await axios.get(
         `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${
             encodeURIComponent(decodeURIComponent(query))
         }&api_key=${
-            env.LASTFM_API_KEY || Deno.env.get("LASTFM_API_KEY") as string
+            process.env.LASTFM_API_KEY as string
         }&format=json`,
     ).then((r) => {
         if (r.status !== 200) {
@@ -278,15 +266,15 @@ app.get("/get-playlinks", async (c) => {
     const { url } = c.req.query() as { url: string };
     let links: string[] = [];
     try {
-        await axiod.get(decodeURIComponent(url)).then((r) => {
+        await axios.get(decodeURIComponent(url)).then((r) => {
             const data = r.data;
             if (r.status !== 200) {
                 return { success: false, message: data.message };
             }
-            const $ = cheerio.load(data);
+            const $ = load(data);
             const playlinks = $("a.play-this-track-playlink");
             const links_: string[] = [];
-            for (const link of playlinks) {
+            for (const link of Array.from(playlinks)) {
                 if (
                     link.attribs.href.includes("spotify" || "youtube") &&
                     !links_.includes(link.attribs.href)
@@ -320,11 +308,11 @@ app.post("/scrobble", async (c) => {
             message: "No user, artist, track, album, or timestamp provided",
         });
     }
-    const res = await axiod.post(
+    const res = await axios.post(
         `http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${
             Math.floor(Date.now() / 1000)
         }&api_key=${
-            env.LASTFM_API_KEY || Deno.env.get(`LASTFM_API_KEY`) as string
+            process.env.LASTFM_API_KEY as string
         }&api_sig=${
             encodeURIComponent(generateSigniture("track.scrobble", user))
         }&sk=${user}&format=json`,
@@ -346,7 +334,7 @@ app.get("/session/:type", async (c) => {
         case "lastfm": {
             let session;
             try {
-                session = await axiod.get(
+                session = await axios.get(
                     `http://ws.audioscrobbler.com/2.0/?method=auth.getSession&sk=${
                         encodeURIComponent(token)
                     }&api_key=${
@@ -415,13 +403,13 @@ app.get("/check-permissions", async (c) =>{
 })
 
 function generateSigniture(method: string, token: string) {
-    return md5.update(
+    return createHash('md5').update(
         `api_key${
-            env.LASTFM_API_KEY || Deno.env.get(`LASTFM_API_KEY`) as string
+            process.env.LASTFM_API_KEY as string
         }method${method}token${token}${
-            env.LASTFM_SECRET || Deno.env.get(`LASTFM_SECRET`) as string
+            process.env.LASTFM_SECRET as string
         }`,
-    ).toString();
+    ).digest("hex").toString();
 }
 
 function checkIfPermission(
@@ -433,4 +421,5 @@ function checkIfPermission(
     return (permissions & permission) === permission;
 }
 
-Deno.serve({ port: +(env.PORT || Deno.env.get("PORT") as string) }, app.fetch);
+serve({ port: +(process.env.PORT as string) as number, fetch: app.fetch });
+console.log(`Listening on port ${process.env.PORT}`);
