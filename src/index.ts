@@ -557,3 +557,20 @@ console.log(`Listening on port ${process.env.PORT}`);
 process.on('uncaughtException', function (err) {
     console.error(err.stack);
 });
+
+player.events.on('error', (queue, error) => {
+    console.log(`General player error event: ${error.message}`);
+    console.log(`General player error event: ${error.message}
+
+${error}
+
+${queue}`);
+});
+
+player.events.on('playerError', (queue, error) => {
+    console.log(`Player error event: ${error.message}
+    
+${error}
+
+${queue}`);
+});
