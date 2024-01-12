@@ -1,1 +1,1 @@
-web: npx tsx src/index.ts
+web: PORT=$PORT npx tsx src/index.ts
