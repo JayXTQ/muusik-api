@@ -20,7 +20,7 @@ jobs:
           node-version: 'lts/*'
     
       - name: Build steps
-        run: npm install && npm run run
+        run: npm install
 
       - name: Deploy to Deno Deploy
         uses: denoland/deployctl@v1
