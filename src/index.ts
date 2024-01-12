@@ -559,7 +559,6 @@ process.on('uncaughtException', function (err) {
 });
 
 player.events.on('error', (queue, error) => {
-    console.log(`General player error event: ${error.message}`);
     console.log(`General player error event: ${error.message}
 
 ${error}
