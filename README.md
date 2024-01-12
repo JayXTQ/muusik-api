@@ -4,7 +4,7 @@ This is the API for the muusik.app project. This API will allow you to request a
 
 ## What is this built on?
 
-This API is built on Deno and Hono.dev (a web framework for Deno). For the Discord bot we are using modules from Discord.js such as @discordjs/core, @discordjs/voice, @discordjs/rest and @discordjs/ws.
+This API is built on Node.JS and Hono.dev (a web framework for APIs). For the Discord bot we are using discord.js and discord-player which does most of the music playing for us.
 
 ## Contributing
 
@@ -12,14 +12,14 @@ If you would like to contribute to this project, please read further here on how
 
 ### Getting started
 
-To get started with contributing to this project, you will need to have Deno installed on your machine. You can do so by following the instructions on the [Deno website](https://deno.land/).
+To get started with contributing to this project, you will need to have Node.JS installed on your machine. Install it via the [Node.JS Website](https://nodejs.org).
 
-Once you have Deno installed, you will need to fork the repository and clone it to your machine, you can use whatever to clone it. I recommend GitHub Desktop for Windows/MacOS users.
+Once you have Node installed, you will need to fork the repository and clone it to your machine, you can use whatever to clone it. I recommend GitHub Desktop for Windows/MacOS users.
 
 Once you have cloned the repository, you will need to install the dependencies. You can do so by running the following command in your terminal:
 
 ```bash
-deno cache app.ts
+npm install
 ```
 
 This will then install all the dependencies/libraries needed for this project.
@@ -31,7 +31,7 @@ This will then install all the dependencies/libraries needed for this project.
 To run the project, you will need to run the following command in your terminal:
 
 ```bash
-deno run --allow-all app.ts
+npm run dev
 ```
 
 This will then run the project and you will be able to access it on your localhost, for instance `http://localhost:8000` (this is default, unless you change the port in `.env`).
