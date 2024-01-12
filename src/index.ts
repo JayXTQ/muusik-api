@@ -9,7 +9,7 @@ import { createHash } from "crypto";
 import { load } from 'cheerio';
 
 import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, Events, REST, Routes, VoiceBasedChannel } from "discord.js";
-import { Player } from 'discord-player';
+import { GuildQueue, Player } from 'discord-player';
 
 const client = new Client({
     intents: [GatewayIntentBits.GuildVoiceStates,
@@ -192,9 +192,9 @@ app.post("/play", async (c) => {
     }
     const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
     try{
-      await player.play(channel, url, { requestedBy: user });
+        await player.play(channel, url, { requestedBy: user });
     } catch(e) {
-      console.log(e)
+        console.log(e)
     }
     c.status(200);
     return c.json({ success: true });
@@ -289,6 +289,59 @@ app.get("/get-playlinks", async (c) => {
     }
     c.status(200);
     return c.json({ links, success: true });
+})
+
+app.get("/queue", async (c) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { user } = c.req.query() as { user: string };
+    if (!user) {
+        c.status(400);
+        return c.json({ success: false, message: "No user provided" });
+    }
+    const state = voiceStates.get(user as string);
+    if (!state) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "User not in a voice channel",
+        });
+    }
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    let queue = player.nodes.get(channel.guild)?.tracks?.data || [];
+    return c.json({ queue, success: true });
+})
+
+app.get("/current-song", async (c) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { user } = c.req.query() as { user: string };
+    if (!user) {
+        c.status(400);
+        return c.json({ success: false, message: "No user provided" });
+    }
+    const state = voiceStates.get(user as string);
+    if (!state) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "User not in a voice channel",
+        });
+    }
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    const queue = player.nodes.get(channel.guild)
+    return c.json({ song: queue?.currentTrack, success: true });
+})
+
+app.get("/get-user", async (c) => {
+    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { user } = c.req.query() as { user: string };
+    if (!user) {
+        c.status(400);
+        return c.json({ success: false, message: "No user provided" });
+    }
+    return c.json({ user: client.users.cache.get(user), success: true });
 })
 
 app.post("/scrobble", async (c) => {
@@ -423,3 +476,7 @@ function checkIfPermission(
 
 serve({ port: +(process.env.PORT as string) as number, fetch: app.fetch });
 console.log(`Listening on port ${process.env.PORT}`);
+
+process.on('uncaughtException', function (err) {
+    console.error(err.stack);
+});
