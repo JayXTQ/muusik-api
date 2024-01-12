@@ -9,7 +9,7 @@ import { createHash } from "crypto";
 import { load } from 'cheerio';
 
 import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, Events, REST, Routes, VoiceBasedChannel } from "discord.js";
-import { GuildQueue, Player } from 'discord-player';
+import { Player } from 'discord-player';
 
 const client = new Client({
     intents: [GatewayIntentBits.GuildVoiceStates,
@@ -38,6 +38,7 @@ client.on(Events.VoiceStateUpdate, (oldState, newState) => {
 });
 
 client.on(Events.ClientReady, async () => {
+    console.log(player.scanDeps());
     onlineSince = Date.now();
     const commands = [
         {
