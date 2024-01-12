@@ -44,7 +44,7 @@ Once you have made your changes, commit to your fork and then you can go and mak
 
 If you find any issues with the project, please create an issue on the repository and I will look into it as soon as possible. For more information about creating issues, check on [GitHub's Docs](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-issues).
 
-## API Documentation
+<!-- ## API Documentation
 
 ### GET /
 
@@ -139,4 +139,4 @@ Checks the permissions of the user
 | guild      | Snowflake | The ID of the guild                                                         |
 | user       | Snowflake | The ID of the user                                                          |
 | permission | Number    | The permission to check for (i.e. admin is 0x8)                             |
-
+ -->
