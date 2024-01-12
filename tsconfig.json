@@ -3,5 +3,7 @@
     "strict": true,
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
+    "outDir": "build",
+    "rootDir": "src"
   }
 }
