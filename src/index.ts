@@ -267,7 +267,12 @@ app.get("/get-playlinks", async (c) => {
     const { url } = c.req.query() as { url: string };
     let links: string[] = [];
     try {
-        await axios.get(decodeURIComponent(url)).then((r) => {
+        await axios.get('https://app.scrapingbee.com/api/v1/', {
+            params: {
+                'api_key': process.env.PROXY_API_KEY,
+                'url': decodeURIComponent(url),  
+            } 
+        }).then((r) => {
             const data = r.data;
             if (r.status !== 200) {
                 c.status(400);
