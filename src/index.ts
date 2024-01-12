@@ -139,7 +139,7 @@ const app = new Hono<{ Variables: Variables }>({ strict: false });
 app.get("/", (c) => c.redirect("https://muusik.app"));
 
 app.get("/find-user", (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { user } = c.req.query();
     if (!user) {
@@ -169,7 +169,7 @@ app.get("/find-user", (c) => {
 });
 
 app.post("/play", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { url, user } = await c.req.json() as {
         url: string;
@@ -223,7 +223,7 @@ app.get("/auth/:type", (c) => {
 });
 
 app.get("/find-song", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { query } = c.req.query() as { query: string };
     let { limit } = c.req.query() as { limit: string | number };
@@ -261,7 +261,7 @@ app.get("/find-song", async (c) => {
 });
 
 app.get("/get-playlinks", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { url } = c.req.query() as { url: string };
     let links: string[] = [];
@@ -276,7 +276,7 @@ app.get("/get-playlinks", async (c) => {
             const links_: string[] = [];
             for (const link of Array.from(playlinks)) {
                 if (
-                    link.attribs.href.includes("spotify" || "youtube") &&
+                    (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube")) &&
                     !links_.includes(link.attribs.href)
                 ) {
                     links_.push(link.attribs.href);
@@ -292,7 +292,7 @@ app.get("/get-playlinks", async (c) => {
 })
 
 app.get("/queue", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { user } = c.req.query() as { user: string };
     if (!user) {
@@ -308,12 +308,21 @@ app.get("/queue", async (c) => {
         });
     }
     const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    let queue = player.nodes.get(channel.guild)?.tracks?.data || [];
-    return c.json({ queue, success: true });
+    const node = player.nodes.get(channel.guild);
+    if(!node) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "No queue found",
+        });
+    }
+    const queue = node.tracks.data || [];
+    const history = node.history.tracks.data || [];
+    return c.json({ queue, history, success: true });
 })
 
 app.get("/current-song", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { user } = c.req.query() as { user: string };
     if (!user) {
@@ -330,11 +339,18 @@ app.get("/current-song", async (c) => {
     }
     const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
     const queue = player.nodes.get(channel.guild)
-    return c.json({ song: queue?.currentTrack, success: true });
+    if(!queue) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "No queue found",
+        });
+    }
+    return c.json({ song: queue.currentTrack, success: true });
 })
 
 app.get("/get-user", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { user } = c.req.query() as { user: string };
     if (!user) {
@@ -344,8 +360,69 @@ app.get("/get-user", async (c) => {
     return c.json({ user: client.users.cache.get(user), success: true });
 })
 
+app.post("/skip", async (c) => {
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
+    c.header("Access-Control-Allow-Credentials", "true");
+    const { user } = await c.req.json() as { user: string };
+    if (!user) {
+        c.status(400);
+        return c.json({ success: false, message: "No user provided" });
+    }
+    const state = voiceStates.get(user as string);
+    if (!state) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "User not in a voice channel",
+        });
+    }
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    const queue = player.nodes.get(channel.guild)
+    if(!queue) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "No queue found",
+        });
+    }
+    queue.node.skip();
+    c.status(200);
+    return c.json({ success: true });
+})
+
+app.post("/pause", async (c) => {
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
+    c.header("Access-Control-Allow-Credentials", "true");
+
+    const { user } = await c.req.json() as { user: string };
+    if (!user) {
+        c.status(400);
+        return c.json({ success: false, message: "No user provided" });
+    }
+    const state = voiceStates.get(user as string);
+    if (!state) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "User not in a voice channel",
+        });
+    }
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    const queue = player.nodes.get(channel.guild)
+    if(!queue) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "No queue found",
+        });
+    }
+    queue.node.setPaused(!queue.isPlaying as unknown as boolean);
+    c.status(200);
+    return c.json({ success: true });
+})
+
 app.post("/scrobble", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { user, artist, track, album, timestamp } = await c.req.json() as {
         user: string;
@@ -379,7 +456,7 @@ app.post("/scrobble", async (c) => {
 });
 
 app.get("/session/:type", async (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { type } = c.req.param();
     const { token } = c.req.query();
@@ -411,7 +488,7 @@ app.get("/session/:type", async (c) => {
 });
 
 app.get("/get-roles", (c) => {
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { guild } = c.req.query();
     if (!guild) {
@@ -428,7 +505,7 @@ app.get("/get-roles", (c) => {
 })
 
 app.get("/check-permissions", async (c) =>{
-    c.header("Access-Control-Allow-Origin", "*");
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
     c.header("Access-Control-Allow-Credentials", "true");
     const { guild, user, permission } = c.req.query();
     if (!guild || !user) {
