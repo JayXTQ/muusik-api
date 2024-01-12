@@ -270,6 +270,7 @@ app.get("/get-playlinks", async (c) => {
         await axios.get(decodeURIComponent(url)).then((r) => {
             const data = r.data;
             if (r.status !== 200) {
+                c.status(400);
                 return { success: false, message: data.message };
             }
             const $ = load(data);
