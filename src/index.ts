@@ -86,7 +86,7 @@ client.on(Events.InteractionCreate, (i) => {
                                 {
                                     "name": `Shards`,
                                     "value": String(
-                                        client.shard?.count
+                                        client.shard?.count || 1
                                     ),
                                     "inline": true,
                                 },
