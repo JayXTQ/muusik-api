@@ -266,6 +266,11 @@ app.get("/get-playlinks", async (c) => {
     c.header("Access-Control-Allow-Credentials", "true");
     const { url } = c.req.query() as { url: string };
     let links: string[] = [];
+    let albumCover: string = "";
+    let songName: string = "";
+    function spacesToPlus(str: string) {
+        return str.replace(/ /g, "+");
+    }
     function getLinks(r: AxiosResponse<any, any>) {
         const data = r.data;
         if (r.status !== 200) {
@@ -319,11 +324,21 @@ app.get("/get-playlinks", async (c) => {
                 getLinks(r)
             });
         }
+        await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
+            if (r.status !== 200) {
+                c.status(400);
+                return { success: false, message: r.data.message };
+            }
+            songName = `${r.data.track.name} - ${r.data.track.artist.name}`;
+            albumCover = r.data.track.album.image[3]["#text"];
+        })
     } catch (_) {
         links = [];
+        albumCover = "";
+        songName = "";
     }
     c.status(200);
-    return c.json({ links, success: true });
+    return c.json({ links, albumCover, songName, success: true });
 })
 
 app.get("/queue", async (c) => {
