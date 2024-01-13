@@ -277,7 +277,7 @@ app.get("/get-playlinks", async (c) => {
         const links_: string[] = [];
         for (const link of Array.from(playlinks)) {
             if (
-                (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube")) &&
+                (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube") || link.attribs.href.includes("apple")) &&
                 !links_.includes(link.attribs.href)
             ) {
                 links_.push(link.attribs.href);
@@ -381,10 +381,7 @@ app.get("/current-song", async (c) => {
             message: "No queue found",
         });
     }
-    let currentTrackTimeElapsed: number = queue.node.estimatedPlaybackTime;
-    for(const history of queue.history.queue.tracks.toArray()) {
-        currentTrackTimeElapsed -= history.durationMS;
-    }
+    const currentTrackTimeElapsed: number = queue.node.estimatedPlaybackTime;
     return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, success: true });
 })
 
@@ -488,6 +485,44 @@ app.get("/check-playing", async (c) => {
     }
     c.status(200);
     return c.json({ playing: queue.node.isPlaying(), success: true });
+})
+
+app.post("/playlist", async (c) => {
+    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
+    c.header("Access-Control-Allow-Credentials", "true");
+
+    const { url, user } = await c.req.json() as { url: string; user: string };
+    if (!url || !user) {
+        c.status(400);
+        return c.json({
+            success: false,
+            message: "No url or user provided",
+        });
+    }
+    const state = voiceStates.get(user as string);
+    if (!state) {
+        c.status(404);
+        return c.json({
+            success: false,
+            message: "User not in a voice channel",
+        });
+    }
+    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
+    let validUrl = url.includes("spotify") || url.includes("apple") ? true : false;
+    if(!validUrl) {
+        c.status(400);
+        return c.json({
+            success: false,
+            message: "Invalid url",
+        });
+    }
+    try{
+        await player.play(channel, url, { requestedBy: user });
+    } catch(e) {
+        console.log(e)
+    }
+    c.status(200);
+    return c.json({ success: true });
 })
 
 app.post("/scrobble", async (c) => {
