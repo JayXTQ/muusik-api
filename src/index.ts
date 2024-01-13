@@ -4,7 +4,7 @@ const dev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
 
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { createHash } from "crypto";
 import { load } from 'cheerio';
 
@@ -266,35 +266,59 @@ app.get("/get-playlinks", async (c) => {
     c.header("Access-Control-Allow-Credentials", "true");
     const { url } = c.req.query() as { url: string };
     let links: string[] = [];
+    function getLinks(r: AxiosResponse<any, any>) {
+        const data = r.data;
+        if (r.status !== 200) {
+            c.status(400);
+            return { success: false, message: data.message };
+        }
+        const $ = load(data);
+        const playlinks = $("a.play-this-track-playlink");
+        const links_: string[] = [];
+        for (const link of Array.from(playlinks)) {
+            if (
+                (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube")) &&
+                !links_.includes(link.attribs.href)
+            ) {
+                links_.push(link.attribs.href);
+            }
+        }
+        links = links_;
+    }
     try {
-        await axios.get('https://app.scrapingbee.com/api/v1/', {
-            params: {
-                'api_key': process.env.PROXY_API_KEY,
-                'url': decodeURIComponent(url),
-                'country_code': 'de',
-                'block_ads': 'true',
-                'render_js': 'false',
-                'premium_proxy': 'true'
-            } 
+        // All of the headers here are to make last.fm think we're a browser, not a bot, otherwise the request will fail with no links, which is when we use a proxy
+        await axios.get(decodeURIComponent(url), {
+            method: "GET",
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
+                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.5",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Referer": "https://www.google.com/",
+                "Upgrade-Insecure-Requests": "1",
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "cross-site",
+                "Sec-Fetch-User": "?1",
+                "TE": "trailers",
+            }
         }).then((r) => {
-            const data = r.data;
-            if (r.status !== 200) {
-                c.status(400);
-                return { success: false, message: data.message };
-            }
-            const $ = load(data);
-            const playlinks = $("a.play-this-track-playlink");
-            const links_: string[] = [];
-            for (const link of Array.from(playlinks)) {
-                if (
-                    (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube")) &&
-                    !links_.includes(link.attribs.href)
-                ) {
-                    links_.push(link.attribs.href);
-                }
-            }
-            links = links_;
+            getLinks(r)
         });
+        if(links.length === 0) {
+            await axios.get('https://app.scrapingbee.com/api/v1/', {
+                params: {
+                    'api_key': process.env.PROXY_API_KEY,
+                    'url': decodeURIComponent(url),
+                    'country_code': 'de',
+                    'block_ads': 'true',
+                    'render_js': 'false',
+                    'premium_proxy': 'true'
+                } 
+            }).then((r) => {
+                getLinks(r)
+            });
+        }
     } catch (_) {
         links = [];
     }
