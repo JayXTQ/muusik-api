@@ -270,7 +270,11 @@ app.get("/get-playlinks", async (c) => {
         await axios.get('https://app.scrapingbee.com/api/v1/', {
             params: {
                 'api_key': process.env.PROXY_API_KEY,
-                'url': decodeURIComponent(url),  
+                'url': decodeURIComponent(url),
+                'country_code': 'de',
+                'block_ads': 'true',
+                'render_js': 'false',
+                'premium_proxy': 'true'
             } 
         }).then((r) => {
             const data = r.data;
