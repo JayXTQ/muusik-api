@@ -357,7 +357,11 @@ app.get("/current-song", async (c) => {
             message: "No queue found",
         });
     }
-    return c.json({ song: queue.currentTrack, success: true });
+    let currentTrackTimeElapsed: number = queue.node.estimatedPlaybackTime;
+    for(const history of queue.history.queue.tracks.toArray()) {
+        currentTrackTimeElapsed -= history.durationMS;
+    }
+    return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, success: true });
 })
 
 app.get("/get-user", async (c) => {
