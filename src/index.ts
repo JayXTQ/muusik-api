@@ -93,7 +93,7 @@ client.on('interactionCreate', (i) => {
                                     "inline": true,
                                 },
                                 {
-                                    "name": `Online since`,
+                                    "name": `Went online`,
                                     "value": `<t:${Math.floor(onlineSince / 1000)
                                         }:R>`,
                                 },
