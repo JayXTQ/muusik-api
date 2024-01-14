@@ -1,11 +1,13 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
+import { lyricsExtractor } from '@discord-player/extractor';
 
 export const current_song = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) => {
     app.get("/current-song", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");
+        const lyricsFinder = lyricsExtractor();
         const { user } = c.req.query() as { user: string };
         if (!user) {
             c.status(400);
@@ -23,6 +25,7 @@ export const current_song = (app: Hono, client: Client, voiceStates: Map<string,
             return c.json({ success: false, message: "No queue found" });
         }
         const currentTrackTimeElapsed = queue.node.estimatedPlaybackTime;
-        return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, success: true });
+        const trackLyrics = await lyricsFinder.search(`${queue.currentTrack?.title} ${queue.currentTrack?.author}`).catch(() => "No lyrics found");
+        return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, trackLyrics, success: true });
     });
 };
