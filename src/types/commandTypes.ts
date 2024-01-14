@@ -5,3 +5,9 @@ export type CommandHandler = (interaction: CommandInteraction) => void | Promise
 export interface CommandHandlers {
     [commandName: string]: CommandHandler | undefined;
 }
+
+export type Command = {
+    name: string;
+    description: string;
+    dm_permission?: boolean;
+};
