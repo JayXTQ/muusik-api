@@ -1,43 +1,37 @@
-import 'dotenv/config'
-
-const dev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-
-import { serve } from '@hono/node-server'
-import { Hono } from 'hono'
-import axios, { AxiosResponse } from "axios";
-import { createHash } from "crypto";
-import { load } from 'cheerio';
-
-import { Client, GatewayIntentBits, InteractionType, version, Guild, Role, Events, REST, Routes, VoiceBasedChannel } from "discord.js";
+import 'dotenv/config';
+import { serve } from '@hono/node-server';
+import { Hono } from 'hono';
+import { Client, GatewayIntentBits, REST, Routes, InteractionType, version } from "discord.js";
 import { Player } from 'discord-player';
+import * as routeHandlers from './routes/index';
 
 const client = new Client({
-    intents: [GatewayIntentBits.GuildVoiceStates,
+    intents: [
+        GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers]
+        GatewayIntentBits.GuildMembers,
+    ],
 });
 
 const player = new Player(client);
 player.extractors.loadDefault();
-
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
-
 let onlineSince: number;
 
-const rest = new REST().setToken(process.env.TOKEN as string);
-
-client.on(Events.VoiceStateUpdate, (oldState, newState) => {
-    if (newState.channelId && newState.guild.id) {
-        voiceStates.set(newState.id, {
+client.on('voiceStateUpdate', (oldState, newState) => {
+    if (newState.member && newState.channelId) {
+        voiceStates.set(newState.member.user.id, {
             guild_id: newState.guild.id,
             channel_id: newState.channelId,
         });
     } else {
-        voiceStates.delete(oldState.id);
+        if (oldState.member?.user.id) {
+            voiceStates.delete(oldState.member.user.id);
+        }
     }
 });
 
-client.on(Events.ClientReady, async () => {
+client.on('ready', async () => {
     console.log(player.scanDeps());
     onlineSince = Date.now();
     const commands = [
@@ -59,7 +53,7 @@ client.on(Events.ClientReady, async () => {
     );
 });
 
-client.on(Events.InteractionCreate, (i) => {
+client.on('interactionCreate', (i) => {
     if (
         i.type === InteractionType.ApplicationCommand
     ) {
@@ -92,9 +86,8 @@ client.on(Events.InteractionCreate, (i) => {
                                 },
                                 {
                                     "name": `Online since`,
-                                    "value": `<t:${
-                                        Math.floor(onlineSince / 1000)
-                                    }:R>`,
+                                    "value": `<t:${Math.floor(onlineSince / 1000)
+                                        }:R>`,
                                 },
                             ],
                         },
@@ -129,566 +122,50 @@ client.on(Events.InteractionCreate, (i) => {
     }
 });
 
-client.login(process.env.TOKEN as string);
+const token = process.env.TOKEN;
 
-type Variables = {
-    message: string;
-};
+if (!token) {
+    throw new Error("TOKEN is not defined in the environment variables");
+}
 
-const app = new Hono<{ Variables: Variables }>({ strict: false });
+const rest = new REST({ version: '9' }).setToken(token);
+
+const app = new Hono();
+
+const dev = process.env.NODE_ENV !== 'production';
 
 app.get("/", (c) => c.redirect("https://muusik.app"));
+routeHandlers.auth_type(app, dev);
+routeHandlers.check_permissions(app, client);
+routeHandlers.check_playing(app, client, voiceStates, player);
+routeHandlers.current_song(app, client, voiceStates, player);
+routeHandlers.find_song(app);
+routeHandlers.findUser(app, client, voiceStates);
+routeHandlers.get_playlinks(app);
+routeHandlers.get_roles(app, client);
+routeHandlers.get_user(app, client);
+routeHandlers.pause(app, client, voiceStates, player);
+routeHandlers.play(app, client, voiceStates, player);
+routeHandlers.playlist(app, client, voiceStates, player);
+routeHandlers.queue(app, client, player, voiceStates);
+routeHandlers.scrobble(app);
+routeHandlers.session_type(app);
+routeHandlers.skip(app, client, voiceStates, player);
 
-app.get("/find-user", (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = c.req.query();
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    let channel;
-    try {
-        const channel_ = voiceStates.get(user);
-        if (!channel_) {
-            c.status(404);
-            return c.json({
-                success: false,
-                message: "User not in a voice channel",
-            });
-        }
-        channel = client.channels.cache.get(channel_.channel_id);
-    } catch (_) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    c.status(200);
-    return c.json({ channel, success: true });
+const port = Number(process.env.PORT || 3000);
+serve({ port, fetch: app.fetch });
+console.log(`Server listening on port ${port}`);
+
+client.on('ready', () => {
+    console.log(`Logged in as ${client.user?.username}!`);
 });
 
-app.post("/play", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { url, user } = await c.req.json() as {
-        url: string;
-        user: string;
-    };
-    if (!url || !user) {
-        c.status(400);
-        return c.json({
-            success: false,
-            message: "No url or user provided",
-        });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    try{
-        await player.play(channel, url, { requestedBy: user });
-    } catch(e) {
-        console.log(e)
-    }
-    c.status(200);
-    return c.json({ success: true });
+client.login(process.env.TOKEN);
+
+process.on('uncaughtException', (error) => {
+    console.error('Uncaught Exception:', error);
 });
 
-app.get("/auth/:type", (c) => {
-    const { type } = c.req.param();
-    switch (type) {
-        case "lastfm":
-            c.status(303);
-            return c.redirect(
-                `https://www.last.fm/api/auth/?api_key=${
-                    encodeURIComponent(
-                        process.env.LASTFM_API_KEY as string,
-                    )
-                }&cb=${
-                    encodeURIComponent(
-                        `http${
-                            dev ? "://localhost:5173" : "s://muusik.app"
-                        }/callback/lastfm`,
-                    )
-                }`,
-            );
-    }
-    return c.json({ success: false });
-});
-
-app.get("/find-song", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { query } = c.req.query() as { query: string };
-    let { limit } = c.req.query() as { limit: string | number };
-    limit = limit ? parseInt(limit as string) : 10;
-    if (query === "undefined" || !query) {
-        c.status(400);
-        return c.json({ success: false, message: "No query provided" });
-    }
-    const song = await axios.get(
-        `http://ws.audioscrobbler.com/2.0/?method=track.search&track=${
-            encodeURIComponent(decodeURIComponent(query))
-        }&api_key=${
-            process.env.LASTFM_API_KEY as string
-        }&format=json`,
-    ).then((r) => {
-        if (r.status !== 200) {
-            return { success: false, status: r.status };
-        }
-        return { success: true, data: r.data.results };
-    });
-    if (!song.success) {
-        c.status(400);
-        return c.json({ success: false, message: song.status });
-    }
-
-    const tracks = song.data.trackmatches;
-
-    const searchLimit = (limit >= tracks.track.length)
-        ? tracks.track.length
-        : limit;
-
-    tracks.track = tracks.track.slice(0, searchLimit);
-    c.status(200);
-    return c.json({ tracks, success: true });
-});
-
-app.get("/get-playlinks", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { url } = c.req.query() as { url: string };
-    let links: string[] = [];
-    let albumCover: string = "";
-    let songName: string = "";
-    function spacesToPlus(str: string) {
-        return str.replace(/ /g, "+");
-    }
-    function getLinks(r: AxiosResponse<any, any>) {
-        const data = r.data;
-        if (r.status !== 200) {
-            c.status(400);
-            return { success: false, message: data.message };
-        }
-        const $ = load(data);
-        const playlinks = $("a.play-this-track-playlink");
-        const links_: string[] = [];
-        for (const link of Array.from(playlinks)) {
-            if (
-                (link.attribs.href.includes("spotify") || link.attribs.href.includes("youtube") || link.attribs.href.includes("apple")) &&
-                !links_.includes(link.attribs.href)
-            ) {
-                links_.push(link.attribs.href);
-            }
-        }
-        links = links_;
-    }
-    try {
-        // All of the headers here are to make last.fm think we're a browser, not a bot, otherwise the request will fail with no links, which is when we use a proxy
-        await axios.get(decodeURIComponent(url), {
-            method: "GET",
-            headers: {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:122.0) Gecko/20100101 Firefox/122.0",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8",
-                "Accept-Language": "en-US,en;q=0.5",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Referer": "https://www.google.com/",
-                "Upgrade-Insecure-Requests": "1",
-                "Sec-Fetch-Dest": "document",
-                "Sec-Fetch-Mode": "navigate",
-                "Sec-Fetch-Site": "cross-site",
-                "Sec-Fetch-User": "?1",
-                "TE": "trailers",
-            }
-        }).then((r) => {
-            getLinks(r)
-        });
-        if(links.length === 0) {
-            await axios.get('https://app.scrapingbee.com/api/v1/', {
-                params: {
-                    'api_key': process.env.PROXY_API_KEY,
-                    'url': decodeURIComponent(url),
-                    'country_code': 'de',
-                    'block_ads': 'true',
-                    'render_js': 'false',
-                    'premium_proxy': 'true'
-                } 
-            }).then((r) => {
-                getLinks(r)
-            });
-        }
-        await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
-            if (r.status !== 200) {
-                c.status(400);
-                return { success: false, message: r.data.message };
-            }
-            songName = `${r.data.track.name} - ${r.data.track.artist.name}`;
-            albumCover = r.data.track.album.image[3]["#text"];
-        })
-    } catch (_) {
-        links = [];
-        albumCover = "";
-        songName = "";
-    }
-    c.status(200);
-    return c.json({ links, albumCover, songName, success: true });
-})
-
-app.get("/queue", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = c.req.query() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    const node = player.nodes.get(channel.guild);
-    if(!node) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "No queue found",
-        });
-    }
-    const queue = node.tracks.data || [];
-    const history = node.history.tracks.data || [];
-    return c.json({ queue, history, success: true });
-})
-
-app.get("/current-song", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = c.req.query() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    const queue = player.nodes.get(channel.guild)
-    if(!queue) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "No queue found",
-        });
-    }
-    const currentTrackTimeElapsed: number = queue.node.estimatedPlaybackTime;
-    return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, success: true });
-})
-
-app.get("/get-user", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = c.req.query() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    return c.json({ user: client.users.cache.get(user), success: true });
-})
-
-app.post("/skip", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user } = await c.req.json() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    const queue = player.nodes.get(channel.guild)
-    if(!queue) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "No queue found",
-        });
-    }
-    queue.node.skip();
-    c.status(200);
-    return c.json({ success: true });
-})
-
-app.post("/pause", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-
-    const { user } = await c.req.json() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    const queue = player.nodes.get(channel.guild)
-    if(!queue) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "No queue found",
-        });
-    }
-    queue.node.setPaused(queue.node.isPlaying());
-    c.status(200);
-    return c.json({ playing: !queue.node.isPlaying() , success: true });
-})
-
-app.get("/check-playing", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-
-    const { user } = c.req.query() as { user: string };
-    if (!user) {
-        c.status(400);
-        return c.json({ success: false, message: "No user provided" });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    const queue = player.nodes.get(channel.guild)
-    if(!queue) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "No queue found",
-        });
-    }
-    c.status(200);
-    return c.json({ playing: queue.node.isPlaying(), success: true });
-})
-
-app.post("/playlist", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-
-    const { url, user } = await c.req.json() as { url: string; user: string };
-    if (!url || !user) {
-        c.status(400);
-        return c.json({
-            success: false,
-            message: "No url or user provided",
-        });
-    }
-    const state = voiceStates.get(user as string);
-    if (!state) {
-        c.status(404);
-        return c.json({
-            success: false,
-            message: "User not in a voice channel",
-        });
-    }
-    const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-    let validUrl = url.includes("spotify") || url.includes("apple") ? true : false;
-    if(!validUrl) {
-        c.status(400);
-        return c.json({
-            success: false,
-            message: "Invalid url",
-        });
-    }
-    try{
-        await player.play(channel, url, { requestedBy: user });
-    } catch(e) {
-        console.log(e)
-    }
-    c.status(200);
-    return c.json({ success: true });
-})
-
-app.post("/scrobble", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { user, artist, track, album, timestamp } = await c.req.json() as {
-        user: string;
-        artist: string;
-        track: string;
-        album: string;
-        timestamp: string;
-    };
-    if (!user || !artist || !track || !album || !timestamp) {
-        c.status(400);
-        return c.json({
-            success: false,
-            message: "No user, artist, track, album, or timestamp provided",
-        });
-    }
-    const res = await axios.post(
-        `http://ws.audioscrobbler.com/2.0/?method=track.scrobble&artist=${artist}&track=${track}&album=${album}&timestamp=${
-            Math.floor(Date.now() / 1000)
-        }&api_key=${
-            process.env.LASTFM_API_KEY as string
-        }&api_sig=${
-            encodeURIComponent(generateSigniture("track.scrobble", user))
-        }&sk=${user}&format=json`,
-    );
-    if (res.status !== 200) {
-        c.status(400);
-        return c.json({ success: false, status: res.status });
-    }
-    c.status(200);
-    return c.json({ success: true });
-});
-
-app.get("/session/:type", async (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { type } = c.req.param();
-    const { token } = c.req.query();
-    switch (type) {
-        case "lastfm": {
-            let session;
-            try {
-                session = await axios.get(
-                    `http://ws.audioscrobbler.com/2.0/?method=auth.getSession&sk=${
-                        encodeURIComponent(token)
-                    }&api_key=${
-                        encodeURIComponent(
-                            generateSigniture("auth.getSession", token),
-                        )
-                    }&format=json`,
-                );
-            } catch (e) {
-                return c.json({ success: false, message: e });
-            }
-            if (session.status !== 200) {
-                return c.json({ success: false, status: session.status });
-            } else {
-                c.status(200);
-                return c.json({ success: true, data: session.data });
-            }
-        }
-    }
-    return c.json({ success: false });
-});
-
-app.get("/get-roles", (c) => {
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { guild } = c.req.query();
-    if (!guild) {
-        c.status(400);
-        return c.json({ success: false, message: "No guild provided" });
-    }
-    const roles = (client.guilds.cache.get(guild) as Guild).roles;
-    if (!roles) {
-        c.status(404);
-        return c.json({ success: false, message: "No roles found" });
-    }
-    c.status(200);
-    return c.json({ success: true, roles });
-})
-
-app.get("/check-permissions", async (c) =>{
-    c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
-    c.header("Access-Control-Allow-Credentials", "true");
-    const { guild, user, permission } = c.req.query();
-    if (!guild || !user) {
-        c.status(400);
-        return c.json({ success: false, message: "No guild or user provided" });
-    }
-    const member = await client.guilds.cache.get(guild)?.members.fetch(user)
-    if (!member) {
-        c.status(404);
-        return c.json({ success: false, message: "Member not found" });
-    }
-    let hasPermission = false;
-    for(let role of member.roles.cache.keys() as unknown as Role[] | string[]) {
-        role = (client.guilds.cache.get(guild) as Guild).roles.cache.find(r => r.id === role) as Role;
-        if(checkIfPermission(role.permissions as unknown as string, permission)) {
-            hasPermission = true;
-        }
-    }
-    if(!hasPermission) {
-        c.status(403);
-        return c.json({ success: false, message: "Member does not have permission" });
-    }
-    c.status(200);
-    return c.json({ success: true });
-})
-
-function generateSigniture(method: string, token: string) {
-    return createHash('md5').update(
-        `api_key${
-            process.env.LASTFM_API_KEY as string
-        }method${method}token${token}${
-            process.env.LASTFM_SECRET as string
-        }`,
-    ).digest("hex").toString();
-}
-
-function checkIfPermission(
-    permissions: number | string,
-    permission: number | string,
-): boolean {
-    permissions = typeof permissions === "string" ? parseInt(permissions) : permissions;
-    permission = typeof permission === "string" ? parseInt(permission) : permission;
-    return (permissions & permission) === permission;
-}
-
-serve({ port: +(process.env.PORT as string) as number, fetch: app.fetch });
-console.log(`Listening on port ${process.env.PORT}`);
-
-process.on('uncaughtException', function (err) {
-    console.error(err.stack);
-});
-
-player.events.on('error', (queue, error) => {
-    console.log(`General player error event: ${error.message}
-
-${error}
-
-${queue}`);
-});
-
-player.events.on('playerError', (queue, error) => {
-    console.log(`Player error event: ${error.message}
-    
-${error}
-
-${queue}`);
+player.on('error', (error) => {
+    console.error('Player Error:', error);
 });
