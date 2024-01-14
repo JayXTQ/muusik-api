@@ -10,7 +10,6 @@ export const findUser = (app: Hono, client: Client, voiceStates: Map<string, { g
             c.status(400);
             return c.json({ success: false, message: "No user provided" });
         }
-        console.log(user);
         let channel;
         try {
             const channel_ = voiceStates.get(user);

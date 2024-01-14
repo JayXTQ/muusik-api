@@ -1,7 +1,8 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from "discord.js";
+import { Player } from 'discord-player';
 
-export const pause = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: any) => {
+export const pause = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) => {
     app.post("/pause", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

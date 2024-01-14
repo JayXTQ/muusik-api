@@ -164,10 +164,6 @@ const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
 console.log(`Server listening on port ${port}`);
 
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user?.username}!`);
-});
-
 client.login(process.env.TOKEN);
 
 process.on('uncaughtException', (error) => {
