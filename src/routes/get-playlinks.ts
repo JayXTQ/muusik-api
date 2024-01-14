@@ -16,6 +16,10 @@ export const get_playlinks = (app: Hono) => {
         let albumCover: string = "";
         let songName: string = "";
 
+        function spacesToPlus(str: string) {
+            return str.replace(/ /g, "+");
+        }
+
         try {
             const decodedUrl = decodeURIComponent(url);
             const response = await axios.get(decodedUrl, {
@@ -31,10 +35,18 @@ export const get_playlinks = (app: Hono) => {
             const $ = load(response.data);
             $("a.play-this-track-playlink").toArray().forEach(link => {
                 const href = link.attribs.href;
-                if (href.includes("spotify") || href.includes("youtube") || href.includes("apple")) {
+                if ((href.includes("spotify") || href.includes("youtube") || href.includes("apple")) && !links.includes(href)) {
                     links.push(href);
                 }
             });
+            await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
+                if (r.status !== 200) {
+                    c.status(400);
+                    return { success: false, message: r.data.message };
+                }
+                songName = `${r.data.track.name} - ${r.data.track.artist.name}`;
+                albumCover = r.data.track.album.image[3]["#text"];
+            })
 
             return c.json({ links, albumCover, songName, success: true });
         } catch (error: any) {
