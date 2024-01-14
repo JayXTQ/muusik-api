@@ -29,7 +29,7 @@ export const get_playlinks = (app: Hono) => {
             const $ = load(response.data);
             $("a.play-this-track-playlink").toArray().forEach(link => {
                 const href = link.attribs.href;
-                if ((href.includes("spotify") || href.includes("youtube") || href.includes("apple")) && !links.includes(href)) {
+                if ((href.includes("spotify") || href.includes("youtube")) && !links.includes(href)) {
                     links.push(href);
                 }
             });

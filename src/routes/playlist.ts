@@ -18,7 +18,7 @@ export const playlist = (app: Hono, client: Client, voiceStates: Map<string, { g
             return c.json({ success: false, message: "User not in a voice channel" });
         }
         const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-        let validUrl = url.includes("spotify") || url.includes("apple") ? true : false;
+        let validUrl = url.includes("spotify");
         if (!validUrl) {
             c.status(400);
             return c.json({ success: false, message: "Invalid url" });
