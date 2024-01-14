@@ -51,6 +51,14 @@ client.on('ready', async () => {
         Routes.applicationCommands(process.env.CLIENT_ID as string),
         { body: commands },
     );
+    client.user?.setPresence({
+        activities: [
+            {
+                name: 'muusik',
+                type: 2,
+            }
+        ]
+    })
 });
 
 client.on('interactionCreate', (i) => {
