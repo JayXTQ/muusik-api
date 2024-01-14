@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
+import axios from 'axios';
 
-export const playlist = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) => {
+export const playlist = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player, dev: boolean) => {
     app.post("/playlist", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");
@@ -18,13 +19,35 @@ export const playlist = (app: Hono, client: Client, voiceStates: Map<string, { g
             return c.json({ success: false, message: "User not in a voice channel" });
         }
         const channel = client.channels.cache.get(state.channel_id) as VoiceBasedChannel;
-        let validUrl = url.includes("spotify");
+        let validUrl = url.includes("spotify") || url.startsWith(`http${dev ? '://localhost:5173' : 's://muusik.app'}/playlist/`);
         if (!validUrl) {
             c.status(400);
             return c.json({ success: false, message: "Invalid url" });
         }
         try {
-            await player.play(channel, url, { requestedBy: user });
+            if(url.startsWith(`http${dev ? '://localhost:5173' : 's://muusik.app'}/playlist/`)) {
+                const data = await axios.get(url+"/data");
+                const tracks = (data.data as {
+                    id: string;
+                    created_at: string;
+                    name: string;
+                    songs: Array<{
+                        url: string;
+                        metadata: {
+                            name: string;
+                            artist: string;
+                            duration: string;
+                            image: string;
+                        }
+                    }>;
+                    owner: string[];
+                }).songs;
+                for(const track of tracks) {
+                    await player.play(channel, track.url, { requestedBy: user });
+                }
+            } else {
+                await player.play(channel, url, { requestedBy: user });
+            }
         } catch (e) {
             console.log(e);
             c.status(500);

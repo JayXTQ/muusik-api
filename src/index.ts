@@ -44,14 +44,14 @@ client.on('interactionCreate', async (interaction) => {
 
     if (!interaction.isAutocomplete()) return;
 
-    if (interaction.commandName === 'play') {
-        const query = interaction.options.getString('query');
+    // if (interaction.commandName === 'play') {
+    //     const query = interaction.options.getString('query');
         
-        const searchResults: Song[] = await searchSongs(query);
+    //     const searchResults: Song[] = await searchSongs(query);
         
-        const choices = searchResults.map(song => ({ name: song.title, value: song.title }));
-        interaction.respond(choices.slice(0, 25));
-    }
+    //     const choices = searchResults.map(song => ({ name: song.title, value: song.title }));
+    //     interaction.respond(choices.slice(0, 25));
+    // }
 });
 
 const token = process.env.TOKEN;
@@ -78,7 +78,7 @@ routeHandlers.get_roles(app, client);
 routeHandlers.get_user(app, client);
 routeHandlers.pause(app, client, voiceStates, player);
 routeHandlers.play(app, client, voiceStates, player);
-routeHandlers.playlist(app, client, voiceStates, player);
+routeHandlers.playlist(app, client, voiceStates, player, dev);
 routeHandlers.queue(app, client, player, voiceStates);
 routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
