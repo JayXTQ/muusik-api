@@ -152,7 +152,7 @@ routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
 
-const port = Number(process.env.PORT || 3000);
+const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
 console.log(`Server listening on port ${port}`);
 
