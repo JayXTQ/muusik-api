@@ -15,3 +15,4 @@ export * from './scrobble';
 export * from './session_type';
 export * from './skip';
 export * from './song-info';
+export * from './shuffle'

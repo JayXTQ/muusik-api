@@ -160,6 +160,7 @@ routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
 routeHandlers.song_info(app);
+routeHandlers.shuffle(app, client, voiceStates, player);
 
 const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
