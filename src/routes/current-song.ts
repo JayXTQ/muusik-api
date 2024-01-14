@@ -24,7 +24,7 @@ export const current_song = (app: Hono, client: Client, voiceStates: Map<string,
             c.status(404);
             return c.json({ success: false, message: "No queue found" });
         }
-        const currentTrackTimeElapsed = queue.node.estimatedPlaybackTime;
+        const currentTrackTimeElapsed = queue.node.getTimestamp()?.current.value || 0;
         const trackLyrics = await lyricsFinder.search(`${queue.currentTrack?.title} ${queue.currentTrack?.author}`).catch(() => "No lyrics found");
         return c.json({ song: queue.currentTrack, currentTrackTimeElapsed, trackLyrics, success: true });
     });
