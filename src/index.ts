@@ -25,8 +25,8 @@ client.on('voiceStateUpdate', (oldState, newState) => {
             channel_id: newState.channelId,
         });
     } else {
-        if (newState.member?.user.id) {
-            voiceStates.delete(newState.member.user.id);
+        if (oldState.member?.user.id) {
+            voiceStates.delete(oldState.member.user.id);
         }
     }
 });
