@@ -159,6 +159,7 @@ routeHandlers.queue(app, client, player, voiceStates);
 routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
+routeHandlers.song_info(app);
 
 const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
