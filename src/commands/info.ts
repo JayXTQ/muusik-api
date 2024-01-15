@@ -31,14 +31,17 @@ export const infoCommand = async (interaction: CommandInteraction) => {
                         {
                             "name": `Went online`,
                             "value": `<t:${Math.floor(onlineSince / 1000)}:R>`,
+                            "inline": true,
                         },
                         {
                             "name": 'Servers',
                             "value": String(client.guilds.cache.size),
+                            "inline": true,
                         },
                         {
                             "name": 'Users watching',
-                            "value": voiceStates.size.toString()
+                            "value": voiceStates.size.toString(),
+                            "inline": true,
                         }
                     ],
                 },
