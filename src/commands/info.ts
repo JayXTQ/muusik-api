@@ -38,7 +38,7 @@ export const infoCommand = async (interaction: CommandInteraction) => {
                         },
                         {
                             "name": 'Users watching',
-                            "value": voiceStates.size.toString();
+                            "value": voiceStates.size.toString()
                         }
                     ],
                 },
