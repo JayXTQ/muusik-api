@@ -8,5 +8,22 @@
         "name": "help",
         "description": "Get help with the muusik.app bot",
         "dm_permission": true
+    },
+    {
+        "name": "play",
+        "description": "Play a song",
+        "options": [
+            {
+                "name": "song",
+                "type": 3,
+                "description": "The name or URL of the song to play",
+                "required": true,
+                "autocomplete": true
+            }
+        ]
+    },
+    {
+        "name": "queue",
+        "description": "View the current queue"
     }
 ]

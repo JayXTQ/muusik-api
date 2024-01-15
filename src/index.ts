@@ -5,7 +5,6 @@ import { Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
-import { searchSongs } from './utils/searchSongs';
 import { Song } from './types';
 
 export const client = new Client({
@@ -16,7 +15,7 @@ export const client = new Client({
     ],
 });
 
-const player = new Player(client);
+export const player = new Player(client);
 player.extractors.loadDefault();
 const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 export let onlineSince: number;
@@ -41,17 +40,6 @@ client.on('ready', async () => {
 
 client.on('interactionCreate', async (interaction) => {
     await interactionManager.handleInteraction(interaction);
-
-    if (!interaction.isAutocomplete()) return;
-
-    // if (interaction.commandName === 'play') {
-    //     const query = interaction.options.getString('query');
-        
-    //     const searchResults: Song[] = await searchSongs(query);
-        
-    //     const choices = searchResults.map(song => ({ name: song.title, value: song.title }));
-    //     interaction.respond(choices.slice(0, 25));
-    // }
 });
 
 const token = process.env.TOKEN;
