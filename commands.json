@@ -21,9 +21,5 @@
                 "autocomplete": true
             }
         ]
-    },
-    {
-        "name": "queue",
-        "description": "View the current queue"
     }
 ]
