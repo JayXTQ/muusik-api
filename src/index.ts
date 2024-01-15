@@ -5,8 +5,6 @@ import { Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
-import { searchSongs } from './utils/searchSongs';
-import { Song } from './types';
 
 export const client = new Client({
     intents: [
@@ -59,8 +57,6 @@ const token = process.env.TOKEN;
 if (!token) {
     throw new Error("TOKEN is not defined in the environment variables");
 }
-
-const rest = new REST({ version: '9' }).setToken(token);
 
 const app = new Hono();
 
