@@ -16,7 +16,7 @@ export const client = new Client({
 
 const player = new Player(client);
 player.extractors.loadDefault();
-const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
+export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 export let onlineSince: number;
 
 client.on('voiceStateUpdate', (oldState, newState) => {

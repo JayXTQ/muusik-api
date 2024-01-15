@@ -1,5 +1,5 @@
 import { CommandInteraction, version } from 'discord.js';
-import { client, onlineSince } from "../index";
+import { client, onlineSince, voiceStates } from "../index";
 
 export const infoCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === "info") {
@@ -29,9 +29,17 @@ export const infoCommand = async (interaction: CommandInteraction) => {
                             "inline": true,
                         },
                         {
-                            "name": `Online since`,
+                            "name": `Went online`,
                             "value": `<t:${Math.floor(onlineSince / 1000)}:R>`,
                         },
+                        {
+                            "name": 'Servers',
+                            "value": String(client.guilds.cache.size),
+                        },
+                        {
+                            "name": 'Users watching',
+                            "value": voiceStates.size.toString();
+                        }
                     ],
                 },
             ],
