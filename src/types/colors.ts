@@ -7,5 +7,5 @@ export const colors = {
 
     Success: 0x77b255,
     Error: 0xFF0000,
-    Muusik: 0x3A015C,
+    Muusik: 0x562353,
 };
