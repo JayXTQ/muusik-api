@@ -21,14 +21,18 @@ export const playCommand = async (interaction: CommandInteraction) => {
         } else {
             const songs = await fetchSongNamesFromLastFM(query);
 
+            const options = songs.slice(0, 25).map((song) => {
+                return {
+                    label: song.name,
+                    description: song.artist,
+                    value: song.url.replace("https://www.last.fm/music/", "") as string
+                }
+            }).filter((song) => song.value.length < 100)
+
             const selectMenu = new StringSelectMenuBuilder()
                 .setCustomId('select-song')
                 .setPlaceholder('Select a song')
-                .addOptions(songs.slice(0, 25).map((song) => ({
-                    label: song.name,
-                    description: song.artist,
-                    value: song.url
-                })));
+                .addOptions(options);
 
             const row = new ActionRowBuilder<StringSelectMenuBuilder>()
                 .addComponents(selectMenu);
@@ -44,7 +48,8 @@ export const playCommand = async (interaction: CommandInteraction) => {
 
 export async function handleSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
     if (interaction.customId === 'select-song') {
-        const links = await playlinks(interaction.values[0]);
+        const url = `https://www.last.fm/music/${interaction.values[0]}`;
+        const links = await playlinks(url);
         const link = links.find((link) => link.includes('spotify')) || links[0] || null;
 
         if (!link) {
@@ -54,7 +59,7 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
         let songName: string = "";
 
         try {
-            await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(interaction.values[0]).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(interaction.values[0]).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
+            await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
                 if (r.status !== 200) {
                     songName = 'Unknown';
                 }
