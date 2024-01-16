@@ -2,6 +2,11 @@ import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuil
 import { player } from '../index';
 import { fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
 import { playlinks } from '../utils/fetchPlaylinks';
+import axios from 'axios';
+
+function spacesToPlus(str: string) {
+    return str.replace(/ /g, "+");
+}
 
 export const playCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'play') {
@@ -42,6 +47,19 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             return interaction.reply({ content: 'No playable links found.', ephemeral: true });
         }
 
+        let songName: string = "";
+
+        try {
+            await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(interaction.values[0]).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(interaction.values[0]).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
+                if (r.status !== 200) {
+                    songName = 'Unknown';
+                }
+                songName = `${r.data.track.name} by ${r.data.track.artist.name}`;
+            })
+        } catch (error: any) {
+            songName = 'Unknown';
+        }
+
         try {
             const member = interaction.member as GuildMember;
             const voiceChannel = member.voice.channel as VoiceBasedChannel;
@@ -49,7 +67,7 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             if (!voiceChannel) {
                 return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
             }
-            await interaction.reply({ content: `Now playing`, ephemeral: true });
+            await interaction.reply({ content: `Now playing ${songName}`, ephemeral: true });
             await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
 
         } catch (error) {
