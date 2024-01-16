@@ -41,7 +41,7 @@ client.on('ready', async () => {
         activities: [{
             name: "muusik for everyone!",
             type: ActivityType.Streaming,
-            url: "https://muusik.app",
+            url: "https://twitch.tv/",
         }],
     });
 });
