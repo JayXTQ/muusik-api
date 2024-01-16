@@ -39,7 +39,7 @@ client.on('ready', async () => {
 
     client.user?.setPresence({
         activities: [{
-            name: "muusik for everyone!",
+            name: "music for everyone",
             type: ActivityType.Streaming,
             url: "https://twitch.tv/jxtq",
         }],
