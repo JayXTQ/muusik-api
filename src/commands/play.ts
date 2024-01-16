@@ -1,8 +1,9 @@
-import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, VoiceBasedChannel } from 'discord.js';
+import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, VoiceBasedChannel, EmbedBuilder, Embed } from 'discord.js';
 import { player } from '..';
 import { fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
 import { playlinks } from '../utils/fetchPlaylinks';
 import axios from 'axios';
+import { colors } from '../types';
 
 function spacesToPlus(str: string) {
     return str.replace(/ /g, "+");
@@ -13,7 +14,10 @@ export const playCommand = async (interaction: CommandInteraction) => {
         const query = interaction.options.get('query')?.value as string;
 
         if (!query) {
-            return interaction.reply({ content: 'Please provide a search query.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('Please provide a search query.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (query.includes("spotify") || query.startsWith(`http${process.env.DEV ? '://localhost:5173' : 's://muusik.app'}/playlist/`)) {
@@ -37,13 +41,17 @@ export const playCommand = async (interaction: CommandInteraction) => {
             const row = new ActionRowBuilder<StringSelectMenuBuilder>()
                 .addComponents(selectMenu);
 
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('Choose a song from the list:');
+
             await interaction.reply({
-                content: 'Choose a song from the list:',
+                embeds: [embed],
                 components: [row],
                 ephemeral: true
             });
-        }
-    };
+        };
+    }
 };
 
 export async function handleSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
@@ -53,7 +61,10 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
         const link = links.find((link) => link.includes('spotify')) || links[0] || null;
 
         if (!link) {
-            return interaction.reply({ content: 'No playable links found.', ephemeral: true });
+            const errorEmbed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('No playable links found.');
+            return interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
 
         let songName: string = "";
@@ -74,7 +85,10 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             const voiceChannel = member.voice.channel as VoiceBasedChannel;
 
             if (!voiceChannel) {
-                return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
+                const embed = new EmbedBuilder()
+                    .setColor(colors.Error)
+                    .setDescription('You need to be in a voice channel to play music!');
+                return interaction.reply({ embeds: [embed], ephemeral: true });
             }
 
             const node = player.nodes.get(voiceChannel.guild.id);
@@ -82,19 +96,20 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             if (node && node.tracks.data.length > 0) {
                 isQueueEmpty = false;
             }
-
             await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
 
-            if (isQueueEmpty) {
-                await interaction.reply({ content: `Now playing ${songName}`, ephemeral: true });
-            } else {
-                const queuePosition = node?.tracks.data.length;
-                await interaction.reply({ content: `${songName} added to queue, position ${queuePosition}`, ephemeral: true });
-            }
+            const queuePosition = node?.tracks.data.length;
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription(isQueueEmpty ? `Now playing ${songName}` : `${songName} added to queue, position ${queuePosition}`);
+            await interaction.reply({ embeds: [embed], ephemeral: true });
 
         } catch (error) {
             console.error('Error handling the song selection:', error);
-            await interaction.reply({ content: 'There was an error processing your selection.', ephemeral: true });
+            const errorEmbed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('There was an error processing your selection.');
+            await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
         }
     }
 }
@@ -104,7 +119,10 @@ async function handlePlaylist(interaction: CommandInteraction, playlistUrl: stri
     const voiceChannel = member.voice.channel as VoiceBasedChannel;
 
     if (!voiceChannel) {
-        return interaction.reply({ content: 'You need to be in a voice channel to play a playlist!', ephemeral: true });
+        const embed = new EmbedBuilder()
+            .setColor(colors.Muusik)
+            .setDescription('You need to be in a voice channel to play music!');
+        return interaction.reply({ embeds: [embed], ephemeral: true });
     }
 
     const skippedTracks = [];
@@ -114,7 +132,11 @@ async function handlePlaylist(interaction: CommandInteraction, playlistUrl: stri
             const data = await axios.get(`${playlistUrl}/data`);
             const tracks = data.data.songs;
 
-            await interaction.reply({ content: `Playing muusik playlist: ${playlistUrl}`, ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription(`Playing muusik playlist: ${playlistUrl}`);
+
+            await interaction.reply({ embeds: [embed], ephemeral: true });
 
             for (const track of tracks) {
                 try {
@@ -125,25 +147,38 @@ async function handlePlaylist(interaction: CommandInteraction, playlistUrl: stri
                 }
             }
         } else if (playlistUrl.includes('spotify.com/playlist/')) {
-            await interaction.reply({ content: `Playing Spotify playlist: ${playlistUrl}`, ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription(`Playing Spotify playlist: ${playlistUrl}`);
+
+            await interaction.reply({ embeds: [embed], ephemeral: true });
             try {
                 await player.play(voiceChannel, playlistUrl, { requestedBy: interaction.user.id });
             } catch (error) {
                 console.error('Error playing Spotify playlist:', error);
-                await interaction.followUp({ content: 'There was an error playing the Spotify playlist.', ephemeral: true });
+                const embed = new EmbedBuilder()
+                    .setColor(colors.Error)
+                    .setDescription('There was an error playing the Spotify playlist.');
+                await interaction.followUp({ embeds: [embed], ephemeral: true });
             }
         } else {
-            await interaction.reply({ content: 'Invalid playlist URL.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription(`Invalid playlist URL: ${playlistUrl}`);
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (skippedTracks.length > 0) {
-            await interaction.followUp({
-                content: `Playlist processed. Skipped tracks:\n${skippedTracks.join('\n')}`,
-                ephemeral: true
-            });
+            const skippedTracksEmbed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription(`Playlist processed. Skipped tracks:\n${skippedTracks.join('\n')}`);
+            await interaction.followUp({ embeds: [skippedTracksEmbed], ephemeral: true });
         }
     } catch (error) {
         console.error('Error playing the playlist:', error);
-        await interaction.editReply({ content: 'There was an error processing the playlist.' });
+        const errorEmbed = new EmbedBuilder()
+            .setColor(colors.Error)
+            .setDescription('There was an error processing the playlist.');
+        await interaction.editReply({ embeds: [errorEmbed] });
     }
 }

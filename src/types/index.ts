@@ -1,2 +1,3 @@
-export * from "./commandTypes";
-export * from "./searchSongs";
+export * from './colors';
+export * from './commandTypes';
+export * from './searchSongs';

@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction } from 'discord.js';
+import { CommandInteraction, GuildMember, VoiceBasedChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, ButtonInteraction, EmbedBuilder } from 'discord.js';
 import { player } from '..';
+import { colors } from '../types';
 
 export const queueCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'queue') {
@@ -7,25 +8,34 @@ export const queueCommand = async (interaction: CommandInteraction) => {
         const voiceChannel = member.voice.channel as VoiceBasedChannel;
 
         if (!voiceChannel) {
-            return interaction.reply({ content: 'You need to be in a voice channel to view the queue!', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('You need to be in a voice channel to view the queue!');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const node = player.nodes.get(voiceChannel.guild);
         if (!node) {
-            return interaction.reply({ content: 'No music is currently playing in this server.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('No music is currently playing in this server.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const queue = node.tracks.data || [];
         if (queue.length === 0) {
-            return interaction.reply({ content: 'The queue is currently empty.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('The queue is currently empty.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const itemsPerPage = 10;
         const totalPages = Math.ceil(queue.length / itemsPerPage);
         const currentPage = 1;
-    
+
         const queueContent = generateQueueContent(queue, currentPage, itemsPerPage);
-    
+
         const row = new ActionRowBuilder<ButtonBuilder>()
             .addComponents(
                 new ButtonBuilder()
@@ -39,14 +49,18 @@ export const queueCommand = async (interaction: CommandInteraction) => {
                     .setStyle(ButtonStyle.Primary)
                     .setDisabled(currentPage === totalPages)
             );
-    
+
+        const embed = new EmbedBuilder()
+            .setColor(colors.Muusik)
+            .setDescription(`Current queue (Page ${currentPage} of ${totalPages}):\n${queueContent}`);
+
         await interaction.reply({
-            content: `Current queue (Page ${currentPage} of ${totalPages}):\n${queueContent}`,
+            embeds: [embed],
             components: [row],
             ephemeral: true
         });
     }
-}
+};
 
 function generateQueueContent(queue: any[], page: number, itemsPerPage: number) {
     const start = (page - 1) * itemsPerPage;
@@ -90,8 +104,12 @@ export async function handleQueuePagination(interaction: ButtonInteraction) {
                 .setDisabled(newPage === totalPages)
         );
 
+    const embed = new EmbedBuilder()
+        .setColor(colors.Muusik)
+        .setDescription(`Current queue (Page ${newPage} of ${totalPages}):\n${queueContent}`);
+
     await interaction.update({
-        content: `Current queue (Page ${newPage} of ${totalPages}):\n${queueContent}`,
+        embeds: [embed],
         components: [row]
     });
 }

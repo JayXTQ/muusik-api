@@ -1,5 +1,6 @@
 import { CommandInteraction, version } from 'discord.js';
 import { client, onlineSince, voiceStates } from "..";
+import { colors } from "../types";
 
 export const infoCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === "info") {
@@ -9,7 +10,7 @@ export const infoCommand = async (interaction: CommandInteraction) => {
                     "title": `Muusik Information`,
                     "description":
                         `Information regarding the official bot for [muusik.app](https://muusik.app)`,
-                    "color": 0x3A015C,
+                    "color": colors.Muusik,
                     "fields": [
                         {
                             "name": `Engines`,

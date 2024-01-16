@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel } from 'discord.js';
+import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
 import { player } from '..';
+import { colors } from '../types';
 
 export const skipCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'skip') {
@@ -7,16 +8,25 @@ export const skipCommand = async (interaction: CommandInteraction) => {
         const voiceChannel = member.voice.channel as VoiceBasedChannel;
 
         if (!voiceChannel) {
-            return interaction.reply({ content: 'You need to be in a voice channel to skip songs!', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('You need to be in a voice channel to skip songs!');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const node = player.nodes.get(voiceChannel.guild);
         if (!node) {
-            return interaction.reply({ content: 'No music is currently playing in this server.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Error)
+                .setDescription('No music is currently playing in this server.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         node.node.skip();
 
-        await interaction.reply({ content: 'Skipped to the next song.', ephemeral: true });
+        const embed = new EmbedBuilder()
+            .setColor(colors.Muusik)
+            .setDescription('Skipped to the next song.');
+        await interaction.reply({ embeds: [embed], ephemeral: true });
     }
 };

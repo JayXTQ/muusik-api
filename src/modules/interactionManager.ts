@@ -1,5 +1,5 @@
 import { Interaction, StringSelectMenuInteraction, GuildMember, ButtonInteraction } from 'discord.js';
-import { CommandHandlers as CommandHandlersType } from '../types';
+import { CommandHandlers as CommandHandlersType, colors } from '../types';
 import * as CommandHandlers from '../commands';
 
 
@@ -13,7 +13,12 @@ export const interactionManager = {
                 await handler(interaction);
             } else {
                 console.log(`No handler for command: ${commandName}`);
-                await interaction.reply({ content: `Command not found.\nNo handler for command: ${commandName}`, ephemeral: true });
+                const errorEmbed = {
+                    title: 'Error',
+                    description: `Command not found.\nNo handler for command: ${commandName}`,
+                    color: colors.Error,
+                };
+                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
             }
         } else if (interaction.isStringSelectMenu()) {
             await CommandHandlers.handleSelectMenuInteraction(interaction as StringSelectMenuInteraction);

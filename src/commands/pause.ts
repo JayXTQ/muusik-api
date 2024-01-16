@@ -1,5 +1,6 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel } from 'discord.js';
+import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
 import { player } from '..';
+import { colors } from '../types';
 
 export const pauseCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'pause') {
@@ -7,20 +8,32 @@ export const pauseCommand = async (interaction: CommandInteraction) => {
         const voiceChannel = member.voice.channel as VoiceBasedChannel;
 
         if (!voiceChannel) {
-            return interaction.reply({ content: 'You need to be in a voice channel to pause the music!', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('You need to be in a voice channel to pause the music!');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const node = player.nodes.get(voiceChannel.guild);
         if (!node || !node.player) {
-            return interaction.reply({ content: 'No music is currently playing in this server.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('No music is currently playing in this server.');
+            return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (node.node.isPlaying()) {
             node.node.setPaused(true);
-            await interaction.reply({ content: 'Music playback paused.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('Music playback paused.');
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         } else {
             node.node.setPaused(false);
-            await interaction.reply({ content: 'Music playback resumed.', ephemeral: true });
+            const embed = new EmbedBuilder()
+                .setColor(colors.Muusik)
+                .setDescription('Music playback resumed.');
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         }
     }
 };
