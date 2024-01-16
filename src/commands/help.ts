@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 import { CommandInteraction } from 'discord.js';
-import { Command } from '../types';
+import { Command, colors } from '../types';
 
 export const helpCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === "help") {
@@ -18,7 +18,7 @@ export const helpCommand = async (interaction: CommandInteraction) => {
                 {
                     "title": `muusik.app Commands`,
                     "description": `Here are the commands you can use with the muusik.app bot:`,
-                    "color": 0x3A015C,
+                    "color": colors.Muusik,
                     "fields": fields,
                 },
             ],

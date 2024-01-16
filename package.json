@@ -3,7 +3,8 @@
     "dev": "tsx src/index.ts",
     "dev:watch": "tsx watch src/index.ts",
     "build": "npx tsc",
-    "registerCommands": "node ./scripts/registerCommands.mjs"
+    "registerCommands": "node ./scripts/registerCommands.mjs",
+    "exportTypes": "node ./scripts/exportTypes.mjs"
   },
   "dependencies": {
     "@discord-player/extractor": "^4.4.6",

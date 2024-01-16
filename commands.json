@@ -8,5 +8,29 @@
         "name": "help",
         "description": "Get help with the muusik.app bot",
         "dm_permission": true
+    },
+    {
+        "name": "play",
+        "description": "Play a song",
+        "options": [
+            {
+                "name": "query",
+                "type": 3,
+                "description": "The name of the song to query",
+                "required": true
+            }
+        ]
+    },
+    {
+        "name": "pause",
+        "description": "Pause the current song"
+    },
+    {
+        "name": "skip",
+        "description": "Skip the current song"
+    },
+    {
+        "name": "queue",
+        "description": "Get the current queue"
     }
 ]
