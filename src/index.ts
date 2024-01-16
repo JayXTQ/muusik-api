@@ -39,8 +39,9 @@ client.on('ready', async () => {
 
     client.user?.setPresence({
         activities: [{
-            name: "muusik.app",
-            type: ActivityType.Listening,
+            name: "muusik for everyone!",
+            type: ActivityType.Streaming,
+            url: "https://muusik.app",
         }],
     });
 });
