@@ -41,7 +41,7 @@ client.on('ready', async () => {
         activities: [{
             name: "muusik for everyone!",
             type: ActivityType.Streaming,
-            url: "https://twitch.tv/",
+            url: "https://twitch.tv/jxtq",
         }],
     });
 });
