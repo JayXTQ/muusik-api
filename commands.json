@@ -14,12 +14,23 @@
         "description": "Play a song",
         "options": [
             {
-                "name": "song",
+                "name": "query",
                 "type": 3,
-                "description": "The name or URL of the song to play",
-                "required": true,
-                "autocomplete": true
+                "description": "The name of the song to query",
+                "required": true
             }
         ]
+    },
+    {
+        "name": "pause",
+        "description": "Pause the current song"
+    },
+    {
+        "name": "skip",
+        "description": "Skip the current song"
+    },
+    {
+        "name": "queue",
+        "description": "Get the current queue"
     }
 ]
