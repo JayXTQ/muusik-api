@@ -1,6 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, VoiceBasedChannel } from 'discord.js';
 import { player } from '../index';
 import { fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
+import { playlinks } from '../utils/fetchPlaylinks';
 
 export const playCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'play') {
@@ -18,7 +19,7 @@ export const playCommand = async (interaction: CommandInteraction) => {
             .addOptions(songs.slice(0, 25).map((song) => ({
                 label: song.name,
                 description: song.artist,
-                value: `${song.name} by ${song.artist}`
+                value: song.url
             })));
 
         const row = new ActionRowBuilder<StringSelectMenuBuilder>()
@@ -34,8 +35,12 @@ export const playCommand = async (interaction: CommandInteraction) => {
 
 export async function handleSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
     if (interaction.customId === 'select-song') {
-        const selectedSong = interaction.values[0];
-        const [songName, artist] = selectedSong.split(" by ").map(part => part.trim());
+        const links = await playlinks(interaction.values[0]);
+        const link = links.find((link) => link.includes('spotify')) || links[0] || null;
+
+        if (!link) {
+            return interaction.reply({ content: 'No playable links found.', ephemeral: true });
+        }
 
         try {
             const member = interaction.member as GuildMember;
@@ -44,14 +49,8 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             if (!voiceChannel) {
                 return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
             }
-
-            let node = player.nodes.get(voiceChannel.guild);
-            if (!node) {
-                await interaction.reply({ content: `Now playing ${songName} by ${artist}`, ephemeral: true });
-                await player.play(voiceChannel, songName, { requestedBy: interaction.user.id });
-            } else {
-                node.play(songName, { requestedBy: interaction.user.id });
-            }
+            await interaction.reply({ content: `Now playing`, ephemeral: true });
+            await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
 
         } catch (error) {
             console.error('Error handling the song selection:', error);
