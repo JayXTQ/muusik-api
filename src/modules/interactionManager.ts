@@ -1,7 +1,7 @@
-import { Interaction, StringSelectMenuInteraction, GuildMember } from 'discord.js';
+import { Interaction, StringSelectMenuInteraction, GuildMember, ButtonInteraction } from 'discord.js';
 import { CommandHandlers as CommandHandlersType } from '../types';
 import * as CommandHandlers from '../commands';
-import { handleSelectMenuInteraction } from '../commands/play';
+
 
 export const interactionManager = {
     handleInteraction: async (interaction: Interaction) => {
@@ -16,7 +16,9 @@ export const interactionManager = {
                 await interaction.reply({ content: `Command not found.\nNo handler for command: ${commandName}`, ephemeral: true });
             }
         } else if (interaction.isStringSelectMenu()) {
-            await handleSelectMenuInteraction(interaction as StringSelectMenuInteraction);
+            await CommandHandlers.handleSelectMenuInteraction(interaction as StringSelectMenuInteraction);
+        } else if (interaction.isButton()) {
+            await CommandHandlers.handleQueuePagination(interaction as ButtonInteraction);
         }
         // Add other interaction types when needed
     },
