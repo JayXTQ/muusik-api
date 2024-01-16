@@ -1,7 +1,7 @@
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { Client, GatewayIntentBits, REST } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
@@ -36,6 +36,13 @@ client.on('voiceStateUpdate', (oldState, newState) => {
 client.on('ready', async () => {
     console.log(player.scanDeps());
     onlineSince = Date.now();
+
+    client.user?.setPresence({
+        activities: [{
+            name: "muusik.app",
+            type: ActivityType.Listening,
+        }],
+    });
 });
 
 client.on('interactionCreate', async (interaction) => {
