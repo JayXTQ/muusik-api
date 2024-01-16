@@ -116,7 +116,7 @@ async function handlePlaylist(interaction: CommandInteraction, playlistUrl: stri
                     await player.play(voiceChannel, track.url, { requestedBy: interaction.user.id });
                 } catch (error) {
                     console.error('Error playing track:', track.url, error);
-                    skippedTracks.push(`[${track.metadata.name}, ${track.metadata.artist}](${track.url})`);
+                    skippedTracks.push(`[${track.metadata.name}, ${track.metadata.artist}](<${track.url}>)`);
                 }
             }
         } else if (playlistUrl.includes('spotify.com/playlist/')) {
