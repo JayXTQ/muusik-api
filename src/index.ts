@@ -17,7 +17,7 @@ export const client = new Client({
 
 export const player = new Player(client);
 player.extractors.loadDefault();
-const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
+export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 export let onlineSince: number;
 
 client.on('voiceStateUpdate', (oldState, newState) => {
@@ -47,8 +47,6 @@ const token = process.env.TOKEN;
 if (!token) {
     throw new Error("TOKEN is not defined in the environment variables");
 }
-
-const rest = new REST({ version: '9' }).setToken(token);
 
 const app = new Hono();
 
