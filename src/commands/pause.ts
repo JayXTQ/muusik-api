@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember, VoiceBasedChannel } from 'discord.js';
-import { player } from '../index';
+import { player } from '..';
 
 export const pauseCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'pause') {

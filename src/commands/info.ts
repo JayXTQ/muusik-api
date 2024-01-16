@@ -1,5 +1,5 @@
 import { CommandInteraction, version } from 'discord.js';
-import { client, onlineSince, voiceStates } from "../index";
+import { client, onlineSince, voiceStates } from "..";
 
 export const infoCommand = async (interaction: CommandInteraction) => {
     if (interaction.commandName === "info") {

@@ -1,5 +1,5 @@
 import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, VoiceBasedChannel } from 'discord.js';
-import { player } from '../index';
+import { player } from '..';
 import { fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
 import { playlinks } from '../utils/fetchPlaylinks';
 import axios from 'axios';
@@ -16,26 +16,30 @@ export const playCommand = async (interaction: CommandInteraction) => {
             return interaction.reply({ content: 'Please provide a search query.', ephemeral: true });
         }
 
-        const songs = await fetchSongNamesFromLastFM(query);
+        if (query.includes("spotify") || query.startsWith(`http${process.env.DEV ? '://localhost:5173' : 's://muusik.app'}/playlist/`)) {
+            await handlePlaylist(interaction, query);
+        } else {
+            const songs = await fetchSongNamesFromLastFM(query);
 
-        const selectMenu = new StringSelectMenuBuilder()
-            .setCustomId('select-song')
-            .setPlaceholder('Select a song')
-            .addOptions(songs.slice(0, 25).map((song) => ({
-                label: song.name,
-                description: song.artist,
-                value: song.url
-            })));
+            const selectMenu = new StringSelectMenuBuilder()
+                .setCustomId('select-song')
+                .setPlaceholder('Select a song')
+                .addOptions(songs.slice(0, 25).map((song) => ({
+                    label: song.name,
+                    description: song.artist,
+                    value: song.url
+                })));
 
-        const row = new ActionRowBuilder<StringSelectMenuBuilder>()
-            .addComponents(selectMenu);
+            const row = new ActionRowBuilder<StringSelectMenuBuilder>()
+                .addComponents(selectMenu);
 
-        await interaction.reply({
-            content: 'Choose a song from the list:',
-            components: [row],
-            ephemeral: true
-        });
-    }
+            await interaction.reply({
+                content: 'Choose a song from the list:',
+                components: [row],
+                ephemeral: true
+            });
+        }
+    };
 };
 
 export async function handleSelectMenuInteraction(interaction: StringSelectMenuInteraction) {
@@ -67,12 +71,74 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             if (!voiceChannel) {
                 return interaction.reply({ content: 'You need to be in a voice channel to play music!', ephemeral: true });
             }
-            await interaction.reply({ content: `Now playing ${songName}`, ephemeral: true });
+
+            const node = player.nodes.get(voiceChannel.guild.id);
+            let isQueueEmpty = true;
+            if (node && node.tracks.data.length > 0) {
+                isQueueEmpty = false;
+            }
+
             await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
+
+            if (isQueueEmpty) {
+                await interaction.reply({ content: `Now playing ${songName}`, ephemeral: true });
+            } else {
+                const queuePosition = node?.tracks.data.length;
+                await interaction.reply({ content: `${songName} added to queue, position ${queuePosition}`, ephemeral: true });
+            }
 
         } catch (error) {
             console.error('Error handling the song selection:', error);
             await interaction.reply({ content: 'There was an error processing your selection.', ephemeral: true });
         }
+    }
+}
+
+async function handlePlaylist(interaction: CommandInteraction, playlistUrl: string) {
+    const member = interaction.member as GuildMember;
+    const voiceChannel = member.voice.channel as VoiceBasedChannel;
+
+    if (!voiceChannel) {
+        return interaction.reply({ content: 'You need to be in a voice channel to play a playlist!', ephemeral: true });
+    }
+
+    const skippedTracks = [];
+
+    try {
+        if (playlistUrl.startsWith(`http${process.env.DEV ? '://localhost:5173' : 's://muusik.app'}/playlist/`)) {
+            const data = await axios.get(`${playlistUrl}/data`);
+            const tracks = data.data.songs;
+
+            await interaction.reply({ content: `Playing muusik playlist: ${playlistUrl}`, ephemeral: true });
+
+            for (const track of tracks) {
+                try {
+                    await player.play(voiceChannel, track.url, { requestedBy: interaction.user.id });
+                } catch (error) {
+                    console.error('Error playing track:', track.url, error);
+                    skippedTracks.push(`[${track.metadata.name}, ${track.metadata.artist}](${track.url})`);
+                }
+            }
+        } else if (playlistUrl.includes('spotify.com/playlist/')) {
+            await interaction.reply({ content: `Playing Spotify playlist: ${playlistUrl}`, ephemeral: true });
+            try {
+                await player.play(voiceChannel, playlistUrl, { requestedBy: interaction.user.id });
+            } catch (error) {
+                console.error('Error playing Spotify playlist:', error);
+                await interaction.followUp({ content: 'There was an error playing the Spotify playlist.', ephemeral: true });
+            }
+        } else {
+            await interaction.reply({ content: 'Invalid playlist URL.', ephemeral: true });
+        }
+
+        if (skippedTracks.length > 0) {
+            await interaction.followUp({
+                content: `Playlist processed. Skipped tracks:\n${skippedTracks.join('\n')}`,
+                ephemeral: true
+            });
+        }
+    } catch (error) {
+        console.error('Error playing the playlist:', error);
+        await interaction.editReply({ content: 'There was an error processing the playlist.' });
     }
 }
