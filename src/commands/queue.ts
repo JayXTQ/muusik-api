@@ -52,7 +52,9 @@ export const queueCommand = async (interaction: CommandInteraction) => {
 
         const embed = new EmbedBuilder()
             .setColor(colors.Muusik)
-            .setDescription(`Current queue (Page ${currentPage} of ${totalPages}):\n${queueContent}`);
+            .setTitle('Current queue')
+            .setDescription(`${queueContent}`)
+            .setFooter({ text: `Page ${currentPage} of ${totalPages}` });
 
         await interaction.reply({
             embeds: [embed],
@@ -73,20 +75,21 @@ function extractCurrentPage(content: string): number {
     return match ? parseInt(match[1], 10) : 1;
 }
 
-
 export async function handleQueuePagination(interaction: ButtonInteraction) {
-    const currentPage = extractCurrentPage(interaction.message.content);
-    const newPage = interaction.customId === 'next_queue_page' ? currentPage + 1 : currentPage - 1;
+    const currentPage = extractCurrentPage(interaction.message.embeds[0].footer?.text ?? '');
+
+    let newPage = interaction.customId === 'next_queue_page' ? currentPage + 1 : currentPage - 1;
 
     const node = player.nodes.get(interaction.guildId || '');
     if (!node || !node.tracks.data) {
-        await interaction.update({ content: 'No music is currently playing in this server.', components: [] });
+        await interaction.update({ embeds: [{ color: colors.Error, description: 'No music is currently playing in this server.' }], components: [] });
         return;
     }
 
     const queue = node.tracks.data;
     const itemsPerPage = 10;
     const totalPages = Math.ceil(queue.length / itemsPerPage);
+    newPage = Math.max(1, Math.min(newPage, totalPages));
 
     const queueContent = generateQueueContent(queue, newPage, itemsPerPage);
 
@@ -106,7 +109,9 @@ export async function handleQueuePagination(interaction: ButtonInteraction) {
 
     const embed = new EmbedBuilder()
         .setColor(colors.Muusik)
-        .setDescription(`Current queue (Page ${newPage} of ${totalPages}):\n${queueContent}`);
+        .setTitle('Current queue')
+        .setDescription(`${queueContent}`)
+        .setFooter({ text: `Page ${newPage} of ${totalPages}` });
 
     await interaction.update({
         embeds: [embed],
