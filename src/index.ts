@@ -2,10 +2,10 @@ import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
 import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
-import { Song } from './types';
 
 export const client = new Client({
     intents: [

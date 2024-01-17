@@ -28,9 +28,21 @@
         "dm_permission": false
     },
     {
+        "name": "resume",
+        "description": "Resume the current song"
+    },
+    {
+        "name": "stop",
+        "description": "Stop the player"
+    },
+    {
         "name": "skip",
         "description": "Skip the current song",
         "dm_permission": false
+    },
+    {
+        "name": "currentlyplaying",
+        "description": "Get the currently playing song"
     },
     {
         "name": "queue",
