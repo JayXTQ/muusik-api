@@ -6,10 +6,7 @@ export const interactionManager = {
     handleInteraction: async (interaction: Interaction) => {
         if (interaction.isCommand()) {
             const { commandName } = interaction;
-            console.log(`Command name: ${commandName}`);
             const handler = (CommandHandlers as unknown as CommandHandlersType)[`${commandName}Command`];
-            console.log(`Handler found:`, handler);
-            console.log(CommandHandlers);
 
             if (handler) {
                 await handler(interaction);
