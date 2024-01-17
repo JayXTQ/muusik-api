@@ -20,14 +20,18 @@ player.extractors.loadDefault();
 export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 export let onlineSince: number;
 
-client.on('voiceStateUpdate', (oldState, newState) => {
+client.on('voiceStateUpdate', async (oldState, newState) => {
     if (newState.member && newState.channelId) {
+        if(!client.guilds.cache.get(newState.guild.id)) await client.guilds.fetch()
+        if(!client.users.cache.get(newState.member.user.id)) await client.users.fetch(newState.member.user.id)
         voiceStates.set(newState.member.user.id, {
             guild_id: newState.guild.id,
             channel_id: newState.channelId,
         });
-    } else {
-        if (oldState.member?.user.id) {
+    } else if (oldState.member) {
+        if(!client.guilds.cache.get(oldState.guild.id)) await client.guilds.fetch()
+        if(!client.users.cache.get(oldState.member.user.id)) await client.users.fetch(oldState.member.user.id)
+        if (oldState.member.user.id) {
             voiceStates.delete(oldState.member.user.id);
         }
     }
