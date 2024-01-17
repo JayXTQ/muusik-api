@@ -19,18 +19,26 @@
                 "description": "The name of the song to query",
                 "required": true
             }
-        ]
+        ],
+        "dm_permission": false
     },
     {
         "name": "pause",
-        "description": "Pause the current song"
+        "description": "Pause the current song",
+        "dm_permission": false
     },
     {
         "name": "skip",
-        "description": "Skip the current song"
+        "description": "Skip the current song",
+        "dm_permission": false
     },
     {
         "name": "queue",
-        "description": "Get the current queue"
+        "description": "Get the current queue",
+        "dm_permission": false
+    },
+    {
+        "name": "vote",
+        "description": "Vote for Muusik on top.gg!"
     }
 ]
