@@ -1,5 +1,4 @@
 import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
-import { getVoiceConnection } from '@discordjs/voice';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -24,9 +23,6 @@ export const stopCommand = async (interaction: CommandInteraction) => {
         }
 
         node.node.stop();
-
-        const connection = getVoiceConnection(interaction.guildId!);
-        connection?.destroy();
 
         const embed = new EmbedBuilder()
             .setColor(colors.Muusik)
