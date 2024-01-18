@@ -5,6 +5,7 @@ import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
+import axios from 'axios';
 
 export const client = new Client({
     intents: [
@@ -47,6 +48,17 @@ client.on('ready', async () => {
             url: "https://twitch.tv/jxtq",
         }],
     });
+
+    if(process.env.TOPGG_TOKEN !== undefined || process.env.TOPGG_TOKEN !== "TOPGG_TOKEN") {
+        await axios.post(`https://top.gg/api/bots/${process.env.CLIENT_ID}/stats`, {
+            server_count: client.guilds.cache.size,
+        },
+        {
+            headers: {
+                Authorization: process.env.TOPGG_TOKEN,
+            },
+        })
+    }
 });
 
 client.on('interactionCreate', async (interaction) => {
