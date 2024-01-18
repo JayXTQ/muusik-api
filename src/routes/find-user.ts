@@ -21,6 +21,13 @@ export const findUser = (app: Hono, client: Client, voiceStates: Map<string, { g
                 });
             }
             channel = client.channels.cache.get(channel_.channel_id);
+            if(!channel) {
+                c.status(404);
+                return c.json({
+                    success: false,
+                    message: "Can not find channel",
+                });
+            }
             c.status(200);
             return c.json({ channel, success: true });
         } catch (_) {

@@ -48,8 +48,7 @@ client.on('ready', async () => {
             url: "https://twitch.tv/jxtq",
         }],
     });
-
-    if(process.env.TOPGG_TOKEN !== undefined || process.env.TOPGG_TOKEN !== "TOPGG_TOKEN") {
+    if(process.env.TOPGG_TOKEN && process.env.TOPGG_TOKEN !== "TOPGG_TOKEN") {
         await axios.post(`https://top.gg/api/bots/${process.env.CLIENT_ID}/stats`, {
             server_count: client.guilds.cache.size,
         },
