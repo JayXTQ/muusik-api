@@ -22,7 +22,7 @@ export const currentlyplayingCommand = async (interaction: CommandInteraction) =
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        const currentTrack = node.tracks.data[0];
+        const currentTrack = player.nodes.get(voiceChannel.guild.id)?.currentTrack;
         if (!currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
