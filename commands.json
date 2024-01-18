@@ -1,7 +1,7 @@
 [
     {
         "name": "info",
-        "description": "Get information about the bot",
+        "description": "Get information about muusik.app",
         "dm_permission": true
     },
     {
@@ -52,5 +52,9 @@
     {
         "name": "vote",
         "description": "Vote for Muusik on top.gg!"
+    },
+    {
+        "name": "stats",
+        "description": "Get stats about muusik.app's official bot"
     }
 ]

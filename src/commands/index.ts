@@ -6,3 +6,4 @@ export * from "./pause-resume";
 export * from "./skip";
 export * from "./queue";
 export * from "./stop";
+export * from "./stats";

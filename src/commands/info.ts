@@ -9,42 +9,18 @@ export const infoCommand = async (interaction: CommandInteraction) => {
                 {
                     "title": `Muusik Information`,
                     "description":
-                        `Information regarding the official bot for [muusik.app](https://muusik.app)`,
-                    "color": colors.Muusik,
-                    "fields": [
-                        {
-                            "name": `Engines`,
-                            "value": `Node.JS (API): ${process.version}\n@discord.js: v${version}`,
-                            "inline": true,
-                        },
-                        {
-                            "name": `Avg. Heartbeat`,
-                            "value": String(client.ws.ping),
-                            "inline": true,
-                        },
-                        {
-                            "name": `Shards`,
-                            "value": String(
-                                client.shard?.count || 1
-                            ),
-                            "inline": true,
-                        },
-                        {
-                            "name": `Went online`,
-                            "value": `<t:${Math.floor(onlineSince / 1000)}:R>`,
-                            "inline": true,
-                        },
-                        {
-                            "name": 'Servers',
-                            "value": String(client.guilds.cache.size),
-                            "inline": true,
-                        },
-                        {
-                            "name": 'Users watching',
-                            "value": voiceStates.size.toString(),
-                            "inline": true,
-                        }
-                    ],
+                        `Information for [muusik.app](https://muusik.app), developed by [Jay](https://jayxtq.xyz) with love <3.
+
+muusik.app is a free and open source Discord music bot which allows you to play your favourite music.
+We have an interactive dashboard and plenty of features to keep you entertained.
+For the whole list of our features, head on over to our [website](https://muusik.app).
+If you are looking for our dashboard, you can find it [here](https://muusik.app/dashboard).
+
+Bot Invite: https://muusik.app/invite
+Discord Server: https://muusik.app/discord
+Frontend Source: https://github.com/JayXTQ/muusik-web
+Backend Source: https://github.com/JayXTQ/muusik-api`,
+                    "color": colors.Muusik
                 },
             ],
         });
