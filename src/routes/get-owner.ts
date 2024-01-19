@@ -24,6 +24,6 @@ export const get_owner = (app: Hono, client: Client, voiceStates: Map<string, { 
             return c.json({ success: false, message: 'Guild not found / not cached'})
         }
         const owner = guild.ownerId
-        return c.json({ owner, success: true });
+        return c.json({ owner, guild: guild.id, success: true });
     });
 };
