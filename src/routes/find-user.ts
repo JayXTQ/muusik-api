@@ -28,8 +28,16 @@ export const findUser = (app: Hono, client: Client, voiceStates: Map<string, { g
                     message: "Can not find channel",
                 });
             }
+            const guild = client.guilds.cache.get(channel_.guild_id);
+            if(!guild) {
+                c.status(404);
+                return c.json({
+                    success: false,
+                    message: "Can not find guild",
+                });
+            }
             c.status(200);
-            return c.json({ channel, success: true });
+            return c.json({ channel, guild, success: true });
         } catch (_) {
             c.status(404);
             return c.json({
