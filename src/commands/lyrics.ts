@@ -28,7 +28,7 @@ export const lyricsCommand = async (interaction: CommandInteraction) => {
         }
 
         lyricsClient
-            .search(currentTrack.title)
+            .search(`${currentTrack.title} ${currentTrack.author}`)
             .then((lyrics) => {
                 const embed = new EmbedBuilder()
                     .setTitle(currentTrack.title)
