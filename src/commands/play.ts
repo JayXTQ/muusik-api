@@ -92,17 +92,19 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             }
 
             const node = player.nodes.get(voiceChannel.guild.id);
-            let isQueueEmpty = true;
+            let queuePosition = 0;
+            let currentlyPlaying = node?.currentTrack ? true : false;
+    
             if (node && node.tracks.data.length > 0) {
-                isQueueEmpty = false;
+                queuePosition = node.tracks.data.length;
             }
-            await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
-
-            const queuePosition = node?.tracks.data.length;
+    
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription(isQueueEmpty ? `Now playing ${songName}` : `${songName} added to queue, position ${queuePosition}`);
+                .setDescription(currentlyPlaying ? `${songName} added to queue, position ${queuePosition + 1}` : `Now playing ${songName}`);
             await interaction.reply({ embeds: [embed], ephemeral: true });
+    
+            await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
 
         } catch (error) {
             console.error('Error handling the song selection:', error);

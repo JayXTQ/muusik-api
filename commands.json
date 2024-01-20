@@ -56,5 +56,9 @@
     {
         "name": "stats",
         "description": "Get stats about muusik.app's official bot"
+    },
+    {
+        "name": "lyrics",
+        "description": "Get the lyrics for a song"
     }
 ]
