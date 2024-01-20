@@ -18,6 +18,7 @@ export const client = new Client({
 export const player = new Player(client);
 player.extractors.loadDefault();
 export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
+export const updates = new Map<string, { track: boolean; volume: boolean; queue: boolean; paused: boolean; }>();
 export let onlineSince: number;
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -92,8 +93,10 @@ routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
 routeHandlers.song_info(app);
-routeHandlers.shuffle(app, client, voiceStates, player);
+routeHandlers.shuffle(app, client, voiceStates, player, updates);
 routeHandlers.get_owner(app, client, voiceStates);
+routeHandlers.volume(app, player, voiceStates);
+routeHandlers.updates(app, voiceStates, updates);
 
 const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
@@ -107,4 +110,108 @@ process.on('uncaughtException', (error) => {
 
 player.on('error', (error) => {
     console.error('Player Error:', error);
+});
+
+player.events.on('playerStart', (queue, track) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: true,
+        volume: queueUpdates?.volume || false,
+        queue: queueUpdates?.queue || false,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('audioTrackAdd', (queue, track) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: queueUpdates?.track || false,
+        volume: queueUpdates?.volume || false,
+        queue: true,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('audioTracksAdd', (queue, tracks) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: queueUpdates?.track || false,
+        volume: queueUpdates?.volume || false,
+        queue: true,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('playerPause', (queue) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: queueUpdates?.track || false,
+        volume: queueUpdates?.volume || false,
+        queue: queueUpdates?.queue || false,
+        paused: true,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('playerResume', (queue) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: queueUpdates?.track || false,
+        volume: queueUpdates?.volume || false,
+        queue: queueUpdates?.queue || false,
+        paused: false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('volumeChange', (queue, volume) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: queueUpdates?.track || false,
+        volume: true,
+        queue: queueUpdates?.queue || false,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('playerFinish', (queue) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: true,
+        volume: queueUpdates?.volume || false,
+        queue: queueUpdates?.queue || false,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
+});
+
+player.events.on('playerSkip', (queue) => {
+    const queueUpdates = updates.get(queue.guild.id);
+    updates.set(queue.guild.id, {
+        track: true,
+        volume: queueUpdates?.volume || false,
+        queue: queueUpdates?.queue || false,
+        paused: queueUpdates?.paused || false,
+    });
+    setTimeout(() => {
+        updates.delete(queue.guild.id);
+    }, 10000);
 });

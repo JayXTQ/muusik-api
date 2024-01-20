@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
+import { Updates } from '../types/MapTypes';
 
-export const shuffle = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) => {
+export const shuffle = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player, updates: Updates) => {
     app.post("/shuffle", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");
@@ -27,6 +28,16 @@ export const shuffle = (app: Hono, client: Client, voiceStates: Map<string, { gu
                 return c.json({ success: false, message: "No queue found" });
             }
             queue.tracks.shuffle()
+            const current = updates.get(channel.guild.id)
+            updates.set(queue.guild.id, {
+                track: current?.track || false,
+                volume: current?.volume || false,
+                queue: true,
+                paused: current?.paused || false,
+            });
+            setTimeout(() => {
+                updates.delete(queue.guild.id)
+            }, 10000)
         } catch (e) {
             console.log(e)
             return c.json({ success: false, message: "Error playing the track" });

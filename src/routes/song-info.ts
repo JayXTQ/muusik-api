@@ -24,7 +24,11 @@ export const song_info = (app: Hono) => {
                     return { success: false, message: r.data.message };
                 }
                 songName = `${r.data.track.name} - ${r.data.track.artist.name}`;
-                albumCover = r.data.track.album.image[3]["#text"];
+                if(r.data.track.album && r.data.track.album.image && r.data.track.album.image[3] && r.data.track.album.image[3]["#text"]) {
+                    albumCover = r.data.track.album.image[3]["#text"]
+                } else {
+                    albumCover = "";
+                }
             })
 
             return c.json({ albumCover, songName, success: true });

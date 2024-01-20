@@ -17,3 +17,5 @@ export * from './skip';
 export * from './song-info';
 export * from './shuffle'
 export * from './get-owner'
+export * from './volume'
+export * from './updates'
