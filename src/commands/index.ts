@@ -8,3 +8,4 @@ export * from "./queue";
 export * from "./stop";
 export * from "./stats";
 export * from "./lyrics";
+export * from "./volume";

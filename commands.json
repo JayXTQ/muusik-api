@@ -60,5 +60,18 @@
     {
         "name": "lyrics",
         "description": "Get the lyrics for a song"
+    },
+    {
+        "name": "volume",
+        "description": "Set the playback volume",
+        "options": [
+            {
+                "name": "volume",
+                "description": "Volume level (0-100)",
+                "type": 4,
+                "required": false
+            }
+        ],
+        "dm_permission": false
     }
 ]
