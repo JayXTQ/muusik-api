@@ -73,5 +73,32 @@
             }
         ],
         "dm_permission": false
+    },
+    {
+        "name": "shuffle",
+        "description": "Shuffle the queue",
+        "dm_permission": false
+    },
+    {
+        "name": "loop",
+        "description": "Control the looping of music",
+        "options": [
+            {
+                "name": "current",
+                "description": "Loop the currently playing track",
+                "type": 1
+            },
+            {
+                "name": "queue",
+                "description": "Loop the entire queue",
+                "type": 1
+            },
+            {
+                "name": "off",
+                "description": "Turn off looping",
+                "type": 1
+            }
+        ],
+        "dm_permission": false
     }
 ]
