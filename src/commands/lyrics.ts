@@ -31,7 +31,7 @@ export const lyricsCommand = async (interaction: CommandInteraction) => {
             .search(`${currentTrack.title} ${currentTrack.author}`)
             .then((lyrics) => {
                 const embed = new EmbedBuilder()
-                    .setTitle(currentTrack.title)
+                    .setTitle(`[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url})`)
                     .setDescription(lyrics?.lyrics ?? 'No lyrics found.')
                     .setColor(colors.Muusik);
 

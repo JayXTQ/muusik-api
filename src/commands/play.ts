@@ -68,16 +68,21 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
         }
 
         let songName: string = "";
+        let authorName: string = "";
+        let songUrl: string = "";
 
         try {
             await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${process.env.LASTFM_API_KEY}&artist=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[0])}&track=${spacesToPlus(decodeURIComponent(url).replace("https://www.last.fm/music/", "").split("/")[2])}&format=json`).then((r) => {
                 if (r.status !== 200) {
                     songName = 'Unknown';
                 }
-                songName = `${r.data.track.name} by ${r.data.track.artist.name}`;
+                songName = `${r.data.track.name}`;
+                authorName = r.data.track.artist.name;
+                songUrl = r.data.track.url;
             })
         } catch (error: any) {
             songName = 'Unknown';
+            authorName = 'Unknown';
         }
 
         try {
@@ -94,16 +99,16 @@ export async function handleSelectMenuInteraction(interaction: StringSelectMenuI
             const node = player.nodes.get(voiceChannel.guild.id);
             let queuePosition = 0;
             let currentlyPlaying = node?.currentTrack ? true : false;
-    
+
             if (node && node.tracks.data.length > 0) {
                 queuePosition = node.tracks.data.length;
             }
-    
+
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription(currentlyPlaying ? `${songName} added to queue, position ${queuePosition + 1}` : `Now playing ${songName}`);
+                .setDescription(currentlyPlaying ? `[${songName} by ${authorName}](${songUrl}) added to queue, position ${queuePosition + 1}` : `Now playing [${songName} by ${authorName}](${songUrl})`);
             await interaction.reply({ embeds: [embed], ephemeral: true });
-    
+
             await player.play(voiceChannel, link, { requestedBy: interaction.user.id });
 
         } catch (error) {
