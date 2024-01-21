@@ -67,7 +67,9 @@ export const queueCommand = async (interaction: CommandInteraction) => {
 function generateQueueContent(queue: any[], page: number, itemsPerPage: number) {
     const start = (page - 1) * itemsPerPage;
     const end = start + itemsPerPage;
-    return queue.slice(start, end).map((song, index) => `${start + index + 1}. ${song.title} requested by ${song.requestedBy}`).join('\n');
+    return queue.slice(start, end).map((song, index) => {
+        return `${start + index + 1}. ${song.title} by ${song.author} requested by ${song.requestedBy}`;
+    }).join('\n');
 }
 
 function extractCurrentPage(content: string): number {
