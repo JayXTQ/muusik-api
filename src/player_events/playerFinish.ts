@@ -1,4 +1,4 @@
-import { player, updates } from '..';
+import { player, updates, updatesTimeout } from '..';
 
 export function playerFinish() {
     player.events.on('playerFinish', (queue) => {
@@ -9,8 +9,9 @@ export function playerFinish() {
             queue: queueUpdates?.queue || false,
             paused: queueUpdates?.paused || false,
         });
-        setTimeout(() => {
+        clearTimeout(updatesTimeout.get(queue.guild.id)!);
+        updatesTimeout.set(queue.guild.id, setTimeout(() => {
             updates.delete(queue.guild.id);
-        }, 10000);
+        }, 10000));
     });
 }

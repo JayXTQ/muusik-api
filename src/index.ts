@@ -20,6 +20,7 @@ export const player = new Player(client);
 player.extractors.loadDefault();
 export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
 export const updates = new Map<string, { track: boolean; volume: boolean; queue: boolean; paused: boolean; }>();
+export const updatesTimeout = new Map<string, NodeJS.Timeout>();
 export let onlineSince: number;
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
@@ -94,7 +95,7 @@ routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
 routeHandlers.song_info(app);
-routeHandlers.shuffle(app, client, voiceStates, player, updates);
+routeHandlers.shuffle(app, client, voiceStates, player, updates, updatesTimeout);
 routeHandlers.get_owner(app, client, voiceStates);
 routeHandlers.volume(app, player, voiceStates);
 routeHandlers.updates(app, voiceStates, updates);
