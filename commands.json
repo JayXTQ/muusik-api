@@ -100,5 +100,18 @@
             }
         ],
         "dm_permission": false
+    },
+    {
+        "name": "forceplay",
+        "description": "Force play a song",
+        "options": [
+            {
+                "name": "query",
+                "type": 3,
+                "description": "The name of the song to query",
+                "required": true
+            }
+        ],
+        "dm_permission": false
     }
 ]

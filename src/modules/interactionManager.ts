@@ -45,8 +45,16 @@ export const interactionManager = {
             }
             // Add other modal submit interaction cases as needed
         } else if (interaction.isStringSelectMenu()) {
-            await CommandHandlers.handleSelectMenuInteraction(interaction as StringSelectMenuInteraction);
+            const selectMenuInteraction = interaction as StringSelectMenuInteraction;
+            switch (selectMenuInteraction.customId) {
+                case 'force-song':
+                    await CommandHandlers.handleForceplaySelectMenuInteraction(selectMenuInteraction);
+                    break;
+                case 'select-song':
+                    await CommandHandlers.handleSelectMenuInteraction(selectMenuInteraction);
+                    break;
+                // Add other select menu interaction cases as needed
+            }
         }
-        // Add other interaction types when needed
     },
 };
