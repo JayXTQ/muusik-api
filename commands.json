@@ -113,5 +113,10 @@
             }
         ],
         "dm_permission": false
+    },
+    {
+        "name": "previous",
+        "description": "Go to the previous song",
+        "dm_permission": false
     }
 ]
