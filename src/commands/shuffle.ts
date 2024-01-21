@@ -1,5 +1,5 @@
 import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
-import { player } from '..';
+import { player, updates, updatesTimeout } from '..';
 import { colors } from '../types';
 
 export const shuffleCommand = async (interaction: CommandInteraction) => {
@@ -31,6 +31,18 @@ export const shuffleCommand = async (interaction: CommandInteraction) => {
 
         node.tracks.shuffle();
 
+        const current = updates.get(voiceChannel.guild.id);
+        updates.set(voiceChannel.guild.id, {
+            track: current?.track || false,
+            volume: current?.volume || false,
+            queue: true,
+            paused: current?.paused || false,
+        });
+        clearTimeout(updatesTimeout.get(voiceChannel.guild.id));
+        updatesTimeout.set(voiceChannel.guild.id, setTimeout(() => {
+            updates.delete(voiceChannel.guild.id);
+        }, 10000));
+        
         const embed = new EmbedBuilder()
             .setColor(colors.Muusik)
             .setDescription('The queue has been shuffled.');
