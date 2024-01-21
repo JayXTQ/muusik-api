@@ -5,6 +5,7 @@ import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { interactionManager } from './modules/interactionManager';
+import {audioTrackAdd, playerFinish, playerPause, playerResume, playerSkip, playerStart, volumeChange} from './player_events';
 import axios from 'axios';
 
 export const client = new Client({
@@ -112,106 +113,10 @@ player.on('error', (error) => {
     console.error('Player Error:', error);
 });
 
-player.events.on('playerStart', (queue, track) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: true,
-        volume: queueUpdates?.volume || false,
-        queue: queueUpdates?.queue || false,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('audioTrackAdd', (queue, track) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: queueUpdates?.track || false,
-        volume: queueUpdates?.volume || false,
-        queue: true,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('audioTracksAdd', (queue, tracks) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: queueUpdates?.track || false,
-        volume: queueUpdates?.volume || false,
-        queue: true,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('playerPause', (queue) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: queueUpdates?.track || false,
-        volume: queueUpdates?.volume || false,
-        queue: queueUpdates?.queue || false,
-        paused: true,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('playerResume', (queue) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: queueUpdates?.track || false,
-        volume: queueUpdates?.volume || false,
-        queue: queueUpdates?.queue || false,
-        paused: false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('volumeChange', (queue, volume) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: queueUpdates?.track || false,
-        volume: true,
-        queue: queueUpdates?.queue || false,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('playerFinish', (queue) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: true,
-        volume: queueUpdates?.volume || false,
-        queue: queueUpdates?.queue || false,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
-
-player.events.on('playerSkip', (queue) => {
-    const queueUpdates = updates.get(queue.guild.id);
-    updates.set(queue.guild.id, {
-        track: true,
-        volume: queueUpdates?.volume || false,
-        queue: queueUpdates?.queue || false,
-        paused: queueUpdates?.paused || false,
-    });
-    setTimeout(() => {
-        updates.delete(queue.guild.id);
-    }, 10000);
-});
+audioTrackAdd();
+playerFinish();
+playerPause();
+playerResume();
+playerSkip();
+playerStart();
+volumeChange();
