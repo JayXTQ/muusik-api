@@ -5,7 +5,7 @@ export async function playlinks(url: string) {
     let links: string[] = [];
 
     try {
-        const decodedUrl = decodeURIComponent(url);
+        const decodedUrl = decodeURIComponent(url).replace("?", "%3F");
         const response = await axios.get(decodedUrl, {
             headers: {
                 "User-Agent": "Mozilla/5.0 (compatible; MuusikFetch/1.0; +https://muusik.app/)"
