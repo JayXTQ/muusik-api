@@ -15,14 +15,7 @@ export const currentlyplayingCommand = async (interaction: CommandInteraction) =
         }
 
         const node = player.nodes.get(voiceChannel.guild.id);
-        if (!node || !node.tracks.data || node.tracks.data.length === 0) {
-            const embed = new EmbedBuilder()
-                .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
-            return interaction.reply({ embeds: [embed], ephemeral: true });
-        }
-
-        const currentTrack = node.currentTrack;
+        const currentTrack = node?.currentTrack;
         if (!currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
@@ -32,7 +25,7 @@ export const currentlyplayingCommand = async (interaction: CommandInteraction) =
 
         let embed = new EmbedBuilder()
             .setTitle('Currently playing')
-            .setDescription(`${currentTrack.title} requested by ${currentTrack.requestedBy}`)
+            .setDescription(`[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url}) requested by ${currentTrack.requestedBy}`)
             .setColor(colors.Muusik);
 
         await interaction.reply({ embeds: [embed], ephemeral: true });
