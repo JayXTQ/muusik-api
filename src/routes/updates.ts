@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { Updates, VoiceStates } from '../types/MapTypes';
+import { Updates, VoiceStates } from '../types';
 
 export const updates = (app: Hono, voiceStates: VoiceStates, updates_: Updates ) => {
     app.get("/updates", async (c) => {
