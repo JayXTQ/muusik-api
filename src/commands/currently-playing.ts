@@ -43,7 +43,9 @@ function createProgressBar(streamTime: number, totalDuration: number) {
     const emptyBarEmoji = '▬';
     const progressMarker = '🔘';
 
-    return `${formatTime(streamTime)} ${progressMarker}${filledBarEmoji.repeat(filledBars)}${emptyBarEmoji.repeat(emptyBars)} ${formatTime(totalDuration)}`;
+    const bar = filledBarEmoji.repeat(filledBars) + progressMarker + emptyBarEmoji.repeat(emptyBars);
+
+    return `${formatTime(streamTime)} ${bar} ${formatTime(totalDuration)}`;
 }
 
 function formatTime(milliseconds: number) {
