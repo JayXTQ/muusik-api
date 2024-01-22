@@ -23,11 +23,32 @@ export const currentlyplayingCommand = async (interaction: CommandInteraction) =
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
+        const progressBar = createProgressBar(node.node.streamTime, node.node.totalDuration);
+
         let embed = new EmbedBuilder()
             .setTitle('Currently playing')
-            .setDescription(`[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url}) requested by ${currentTrack.requestedBy}`)
+            .setDescription(`[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url}) requested by ${currentTrack.requestedBy}\n\n${progressBar}`)
             .setColor(colors.Muusik);
 
         await interaction.reply({ embeds: [embed], ephemeral: true });
     }
 };
+
+function createProgressBar(streamTime: number, totalDuration: number) {
+    const totalBars = 20;
+    const progressPercent = streamTime / totalDuration;
+    const filledBars = Math.round(totalBars * progressPercent);
+    const emptyBars = totalBars - filledBars;
+    const filledBarEmoji = '▬';
+    const emptyBarEmoji = '▬';
+    const progressMarker = '🔘';
+
+    return `${formatTime(streamTime)} ${progressMarker}${filledBarEmoji.repeat(filledBars)}${emptyBarEmoji.repeat(emptyBars)} ${formatTime(totalDuration)}`;
+}
+
+function formatTime(milliseconds: number) {
+    const totalSeconds = Math.floor(milliseconds / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+}
