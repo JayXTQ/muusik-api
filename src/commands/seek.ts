@@ -24,7 +24,7 @@ export const seekCommand = async (interaction: CommandInteraction) => {
         const position = parseTimeToMilliseconds(timeString);
 
 
-        if (position === null || position > node.node.totalDuration) {
+        if (position === null || position > node.currentTrack.durationMS) {
             return interaction.reply({ content: 'Invalid duration or duration exceeds track length.', ephemeral: true });
         }
 
