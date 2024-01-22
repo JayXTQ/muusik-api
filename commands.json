@@ -118,5 +118,18 @@
         "name": "previous",
         "description": "Go to the previous song",
         "dm_permission": false
+    },
+    {
+        "name": "seek",
+        "description": "Seek to a position in the song",
+        "options": [
+            {
+                "name": "position",
+                "type": 3,
+                "description": "The position to seek",
+                "required": true
+            }
+        ],
+        "dm_permission": false
     }
 ]
