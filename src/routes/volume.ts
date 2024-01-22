@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import axios, { AxiosResponse } from 'axios';
 import { Player } from 'discord-player';
-import { VoiceStates } from '../types/MapTypes';
+import { VoiceStates } from '../types';
 
 export const volume = (app: Hono, player: Player, voiceStates: VoiceStates) => {
     app.get("/volume/:type", async (c) => {

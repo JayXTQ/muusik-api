@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
-import { Updates } from '../types/MapTypes';
+import { Updates } from '../types';
 
 export const shuffle = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player, updates: Updates, updatesTimeout: Map<string, NodeJS.Timeout>) => {
     app.post("/shuffle", async (c) => {

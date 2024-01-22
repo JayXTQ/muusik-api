@@ -9,3 +9,7 @@ export * from "./stop";
 export * from "./stats";
 export * from "./lyrics";
 export * from "./volume";
+export * from "./forceplay";
+export * from "./shuffle";
+export * from "./loop-unloop";
+export * from "./previous";
