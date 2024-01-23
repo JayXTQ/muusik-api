@@ -99,6 +99,7 @@ routeHandlers.shuffle(app, client, voiceStates, player, updates, updatesTimeout)
 routeHandlers.get_owner(app, client, voiceStates);
 routeHandlers.volume(app, player, voiceStates);
 routeHandlers.updates(app, voiceStates, updates);
+routeHandlers.previous(app, client, player, voiceStates);
 
 const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
