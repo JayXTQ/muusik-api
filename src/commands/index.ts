@@ -13,3 +13,4 @@ export * from "./forceplay";
 export * from "./shuffle";
 export * from "./loop-unloop";
 export * from "./previous";
+export * from "./seek";
