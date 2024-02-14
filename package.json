@@ -1,32 +1,34 @@
 {
-  "scripts": {
-    "dev": "tsx src/index.ts",
-    "dev:watch": "tsx watch src/index.ts",
-    "build": "npx tsc",
-    "registerCommands": "node ./scripts/registerCommands.mjs",
-    "exportTypes": "node ./scripts/exportTypes.mjs"
-  },
-  "dependencies": {
-    "@discord-player/extractor": "^4.4.6",
-    "@hono/node-server": "^1.4.1",
-    "axios": "^1.6.5",
-    "bufferutil": "^4.0.8",
-    "cheerio": "^1.0.0-rc.12",
-    "dotenv": "^16.3.1",
-    "ffmpeg-static": "^5.2.0",
-    "hono": "^3.12.2",
-    "mediaplex": "^0.0.9",
-    "play-dl": "^1.9.7"
-  },
-  "devDependencies": {
-    "@types/node": "^20.11.0",
-    "discord-player": "^6.6.7",
-    "discord-voip": "^0.1.3",
-    "discord.js": "^14.14.1",
-    "tsx": "^3.12.2",
-    "typescript": "^5.3.3"
-  },
-  "engines": {
-    "node": "20.x"
-  }
+    "scripts": {
+        "dev": "tsx src/index.ts",
+        "dev:watch": "tsx watch src/index.ts",
+        "build": "npx tsc",
+        "registerCommands": "node ./scripts/registerCommands.mjs",
+        "exportTypes": "node ./scripts/exportTypes.mjs",
+        "format": "prettier . --write"
+    },
+    "dependencies": {
+        "@discord-player/extractor": "^4.4.6",
+        "@hono/node-server": "^1.4.1",
+        "axios": "^1.6.5",
+        "bufferutil": "^4.0.8",
+        "cheerio": "^1.0.0-rc.12",
+        "dotenv": "^16.3.1",
+        "ffmpeg-static": "^5.2.0",
+        "hono": "^3.12.2",
+        "mediaplex": "^0.0.9",
+        "play-dl": "^1.9.7",
+        "prettier": "^3.2.5"
+    },
+    "devDependencies": {
+        "@types/node": "^20.11.0",
+        "discord-player": "^6.6.7",
+        "discord-voip": "^0.1.3",
+        "discord.js": "^14.14.1",
+        "tsx": "^3.12.2",
+        "typescript": "^5.3.3"
+    },
+    "engines": {
+        "node": "20.x"
+    }
 }
