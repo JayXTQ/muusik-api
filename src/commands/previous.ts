@@ -2,7 +2,7 @@ import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from
 import { useHistory } from 'discord-player';
 import { colors } from '../types'; 
 
-export const previousCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'previous') {
         const member = interaction.member as GuildMember;
         const voiceChannel = member.voice.channel as VoiceBasedChannel;

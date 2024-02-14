@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export async function fetchSongNamesFromLastFM(query: string): Promise<{ name: string, artist: string, url: string }[]> {
+export default async function (query: string): Promise<{ name: string, artist: string, url: string }[]> {
     try {
         const response = await axios.get(`http://ws.audioscrobbler.com/2.0/?method=track.search&track=${encodeURIComponent(query)}&api_key=${process.env.LASTFM_API_KEY}&format=json`);
         if (response.data.results && response.data.results.trackmatches && response.data.results.trackmatches.track) {

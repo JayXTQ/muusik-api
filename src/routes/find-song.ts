@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import axios from 'axios';
 
-export const find_song = (app: Hono) => {
+export default function (app: Hono) {
     app.get("/find-song", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

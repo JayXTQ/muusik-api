@@ -3,7 +3,7 @@ import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
 import { Updates } from '../types';
 
-export const shuffle = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player, updates: Updates, updatesTimeout: Map<string, NodeJS.Timeout>) => {
+export default function (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player, updates: Updates, updatesTimeout: Map<string, NodeJS.Timeout>) {
     app.post("/shuffle", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

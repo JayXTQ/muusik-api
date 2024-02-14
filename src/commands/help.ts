@@ -5,7 +5,7 @@ import * as path from 'path';
 
 const ITEMS_PER_PAGE = 8;
 
-export const helpCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === "help") {
         const commandsFilePath = path.join(__dirname, '../../commands.json');
         const commands: Command[] = JSON.parse(fs.readFileSync(commandsFilePath, 'utf8'));

@@ -3,7 +3,7 @@ import axios, { AxiosResponse } from 'axios';
 import { Player } from 'discord-player';
 import { VoiceStates } from '../types';
 
-export const volume = (app: Hono, player: Player, voiceStates: VoiceStates) => {
+export default function (app: Hono, player: Player, voiceStates: VoiceStates) {
     app.get("/volume/:type", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

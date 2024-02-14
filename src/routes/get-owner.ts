@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Client } from "discord.js";
 
-export const get_owner = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>) => {
+export default function (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>) {
     app.get("/get-owner", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

@@ -1,7 +1,7 @@
 import { ActionRowBuilder, CommandInteraction, GuildMember, StringSelectMenuBuilder, StringSelectMenuInteraction, VoiceBasedChannel, EmbedBuilder, Embed } from 'discord.js';
 import { player } from '..';
-import { fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
-import { playlinks } from '../utils/fetchPlaylinks';
+import { default as fetchSongNamesFromLastFM } from '../utils/fetchSongNamesFromLastFM';
+import { default as playlinks } from '../utils/fetchPlaylinks';
 import axios from 'axios';
 import { colors } from '../types';
 
@@ -9,7 +9,7 @@ function spacesToPlus(str: string) {
     return str.replace(/ /g, "+");
 }
 
-export const playCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'play') {
         const query = interaction.options.get('query')?.value as string;
 

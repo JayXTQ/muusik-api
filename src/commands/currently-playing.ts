@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder, GuildMember, VoiceBasedChannel } from
 import { player } from '..';
 import { colors } from '../types';
 
-export const currentlyplayingCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'currentlyplaying') {
         const member = interaction.member as GuildMember;
         const voiceChannel = member.voice.channel as VoiceBasedChannel;

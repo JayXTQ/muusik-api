@@ -1,22 +1,22 @@
-export * from './auth_type';
-export * from './check-permissions';
-export * from './check-playing';
-export * from './current-song';
-export * from './find-song';
-export * from './find-user';
-export * from './get-playlinks';
-export * from './get-roles';
-export * from './get-user';
-export * from './pause';
-export * from './play';
-export * from './playlist';
-export * from './queue';
-export * from './scrobble';
-export * from './session_type';
-export * from './skip';
-export * from './song-info';
-export * from './shuffle'
-export * from './get-owner'
-export * from './volume'
-export * from './updates'
-export * from './previous'
+export { default as auth_type } from './auth_type';
+export { default as check_permissions } from './check-permissions';
+export { default as check_playing } from './check-playing';
+export { default as current_song } from './current-song';
+export { default as find_song } from './find-song';
+export { default as find_user } from './find-user';
+export { default as get_playlinks } from './get-playlinks';
+export { default as get_roles } from './get-roles';
+export { default as get_user } from './get-user';
+export { default as pause } from './pause';
+export { default as play } from './play';
+export { default as playlist } from './playlist';
+export { default as queue } from './queue';
+export { default as scrobble } from './scrobble';
+export { default as session_type } from './session_type';
+export { default as skip } from './skip';
+export { default as song_info } from './song-info';
+export { default as shuffle } from './shuffle'
+export { default as get_owner } from './get-owner'
+export { default as volume } from './volume'
+export { default as updates } from './updates'
+export { default as previous } from './previous'

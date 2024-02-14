@@ -2,7 +2,7 @@ import { CommandInteraction, version } from 'discord.js';
 import { client, onlineSince, voiceStates } from "..";
 import { colors } from "../types";
 
-export const statsCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === "stats") {
         interaction.reply({
             "embeds": [

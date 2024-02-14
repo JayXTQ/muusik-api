@@ -4,7 +4,7 @@ import { Hono } from 'hono';
 import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
-import { interactionManager } from './modules/interactionManager';
+import { default as interactionManager } from './modules/interactionManager';
 import {audioTrackAdd, playerFinish, playerPause, playerResume, playerSkip, playerStart, volumeChange} from './player_events';
 import axios from 'axios';
 
@@ -83,7 +83,7 @@ routeHandlers.check_permissions(app, client);
 routeHandlers.check_playing(app, client, voiceStates, player);
 routeHandlers.current_song(app, client, voiceStates, player);
 routeHandlers.find_song(app);
-routeHandlers.findUser(app, client, voiceStates);
+routeHandlers.find_user(app, client, voiceStates);
 routeHandlers.get_playlinks(app);
 routeHandlers.get_roles(app, client);
 routeHandlers.get_user(app, client);

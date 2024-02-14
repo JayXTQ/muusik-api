@@ -2,7 +2,7 @@ import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder, ChatI
 import { player } from '..';
 import { colors } from '../types';
 
-export const loopCommand = async (interaction: ChatInputCommandInteraction) => {
+export default async (interaction: ChatInputCommandInteraction) => {
     if (interaction.commandName === 'loop') {
         const subcommand = interaction.options.getSubcommand();
 

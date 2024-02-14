@@ -3,7 +3,7 @@ import { Client, VoiceBasedChannel } from "discord.js";
 import { Player } from 'discord-player';
 import { lyricsExtractor } from '@discord-player/extractor';
 
-export const current_song = (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) => {
+export default function (app: Hono, client: Client, voiceStates: Map<string, { guild_id: string; channel_id: string }>, player: Player) {
     app.get("/current-song", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

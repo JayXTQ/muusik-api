@@ -2,7 +2,7 @@ import { CommandInteraction, GuildMember, VoiceBasedChannel, ActionRowBuilder, B
 import { player } from '..';
 import { colors } from '../types';
 
-export const queueCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'queue') {
         const member = interaction.member as GuildMember;
         const voiceChannel = member.voice.channel as VoiceBasedChannel;

@@ -1,6 +1,6 @@
 import { Hono } from 'hono';
 
-export const auth_type = (app: Hono, dev: boolean) => {
+export default function (app: Hono, dev: boolean) {
     app.get("/auth/:type", async (c) => {
         const { type } = c.req.param();
         switch (type) {

@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Client } from "discord.js";
 
-export const get_user = (app: Hono, client: Client) => {
+export default function (app: Hono, client: Client) {
     app.get("/get-user", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

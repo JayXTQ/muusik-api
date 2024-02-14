@@ -2,7 +2,7 @@ import { Interaction, StringSelectMenuInteraction, ButtonInteraction, ModalSubmi
 import { CommandHandlers as CommandHandlersType, colors } from '../types';
 import * as CommandHandlers from '../commands';
 
-export const interactionManager = {
+export default {
     handleInteraction: async (interaction: Interaction) => {
         if (interaction.isCommand()) {
             const { commandName } = interaction;

@@ -5,7 +5,7 @@ import { colors } from '../types';
 
 const lyricsClient = lyricsExtractor(); // optional API key here :3
 
-export const lyricsCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'lyrics') {
         const member = interaction.member as GuildMember;
         const voiceChannel = member.voice.channel as VoiceBasedChannel;

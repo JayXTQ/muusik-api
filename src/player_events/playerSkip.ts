@@ -1,6 +1,6 @@
 import { player, updates, updatesTimeout } from '..';
 
-export function playerSkip() {
+export default function () {
     player.events.on('playerSkip', (queue) => {
         const queueUpdates = updates.get(queue.guild.id);
         updates.set(queue.guild.id, {

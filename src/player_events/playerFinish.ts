@@ -1,6 +1,6 @@
 import { player, updates, updatesTimeout } from '..';
 
-export function playerFinish() {
+export default function () {
     player.events.on('playerFinish', (queue) => {
         const queueUpdates = updates.get(queue.guild.id);
         updates.set(queue.guild.id, {

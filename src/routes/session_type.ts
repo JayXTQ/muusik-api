@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { createHash } from "crypto";
 import axios from "axios";
 
-export const session_type = (app: Hono) => {
+export default function (app: Hono) {
     app.get("/session/:type", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

@@ -2,7 +2,7 @@ import { CommandInteraction, version } from 'discord.js';
 import { client, onlineSince, voiceStates } from "..";
 import { colors } from "../types";
 
-export const infoCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === "info") {
         interaction.reply({
             "embeds": [

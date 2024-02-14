@@ -1,7 +1,7 @@
 import axios from "axios";
 import { load } from "cheerio";
 
-export async function playlinks(url: string) {
+export default async function (url: string) {
     let links: string[] = [];
 
     try {

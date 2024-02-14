@@ -11,7 +11,7 @@ function checkIfPermission(
 }
 
 
-export const check_permissions = (app: Hono, client: Client) => {
+export default function (app: Hono, client: Client) {
     app.get("/check-permissions", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

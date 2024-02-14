@@ -1,6 +1,6 @@
 import { player, updates, updatesTimeout } from '..';
 
-export function volumeChange() {
+export default function () {
     player.events.on('volumeChange', (queue, volume) => {
         const queueUpdates = updates.get(queue.guild.id);
         updates.set(queue.guild.id, {

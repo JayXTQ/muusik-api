@@ -1,6 +1,6 @@
 import {Colors as DJSColors} from 'discord.js';
 
-export const colors = {
+export default {
     ...DJSColors,
     Aqua: 0x00eaea,
     Edit: 0xeda941,

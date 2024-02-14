@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
 import axios, { AxiosResponse } from 'axios';
 import { load } from 'cheerio';
-import { playlinks } from '../utils/fetchPlaylinks'
+import { default as playlinks } from '../utils/fetchPlaylinks'
 
-export const get_playlinks = (app: Hono) => {
+export default function (app: Hono) {
     app.get("/get-playlinks", async (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

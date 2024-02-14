@@ -2,7 +2,7 @@ import { CommandInteraction, EmbedBuilder, GuildMember } from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
-export const stopCommand = async (interaction: CommandInteraction) => {
+export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'stop') {
         const member = interaction.member as GuildMember;
         const voiceChannel = member.voice.channel;

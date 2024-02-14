@@ -1,7 +1,7 @@
 import { Hono } from 'hono';
 import { Client, Guild } from "discord.js";
 
-export const get_roles = (app: Hono, client: Client) => {
+export default function (app: Hono, client: Client) {
     app.get("/get-roles", (c) => {
         c.header("Access-Control-Allow-Origin", process.env.FRONTEND_ORIGIN);
         c.header("Access-Control-Allow-Credentials", "true");

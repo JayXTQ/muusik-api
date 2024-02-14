@@ -1,6 +1,6 @@
 import { player, updates, updatesTimeout } from '..';
 
-export function audioTrackAdd() {
+export default function () {
     player.events.on('audioTrackAdd', (queue, track) => {
         const queueUpdates = updates.get(queue.guild.id);
         updates.set(queue.guild.id, {
