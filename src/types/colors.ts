@@ -1,4 +1,4 @@
-import {Colors as DJSColors} from 'discord.js';
+import { Colors as DJSColors } from 'discord.js';
 
 export default {
     ...DJSColors,
@@ -6,6 +6,6 @@ export default {
     Edit: 0xeda941,
 
     Success: 0x77b255,
-    Error: 0xFF0000,
+    Error: 0xff0000,
     Muusik: 0x562353,
 };

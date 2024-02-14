@@ -1,11 +1,19 @@
 import 'dotenv/config';
 import { serve } from '@hono/node-server';
 import { Hono } from 'hono';
-import { ActivityType, Client, GatewayIntentBits, REST } from "discord.js";
+import { ActivityType, Client, GatewayIntentBits, REST } from 'discord.js';
 import { Player } from 'discord-player';
 import * as routeHandlers from './routes/index';
 import { default as interactionManager } from './modules/interactionManager';
-import {audioTrackAdd, playerFinish, playerPause, playerResume, playerSkip, playerStart, volumeChange} from './player_events';
+import {
+    audioTrackAdd,
+    playerFinish,
+    playerPause,
+    playerResume,
+    playerSkip,
+    playerStart,
+    volumeChange,
+} from './player_events';
 import axios from 'axios';
 
 export const client = new Client({
@@ -18,22 +26,32 @@ export const client = new Client({
 
 export const player = new Player(client);
 player.extractors.loadDefault();
-export const voiceStates = new Map<string, { guild_id: string; channel_id: string }>();
-export const updates = new Map<string, { track: boolean; volume: boolean; queue: boolean; paused: boolean; }>();
+export const voiceStates = new Map<
+    string,
+    { guild_id: string; channel_id: string }
+>();
+export const updates = new Map<
+    string,
+    { track: boolean; volume: boolean; queue: boolean; paused: boolean }
+>();
 export const updatesTimeout = new Map<string, NodeJS.Timeout>();
 export let onlineSince: number;
 
 client.on('voiceStateUpdate', async (oldState, newState) => {
     if (newState.member && newState.channelId) {
-        if(!client.guilds.cache.get(newState.guild.id)) await client.guilds.fetch()
-        if(!client.users.cache.get(newState.member.user.id)) await client.users.fetch(newState.member.user.id)
+        if (!client.guilds.cache.get(newState.guild.id))
+            await client.guilds.fetch();
+        if (!client.users.cache.get(newState.member.user.id))
+            await client.users.fetch(newState.member.user.id);
         voiceStates.set(newState.member.user.id, {
             guild_id: newState.guild.id,
             channel_id: newState.channelId,
         });
     } else if (oldState.member) {
-        if(!client.guilds.cache.get(oldState.guild.id)) await client.guilds.fetch()
-        if(!client.users.cache.get(oldState.member.user.id)) await client.users.fetch(oldState.member.user.id)
+        if (!client.guilds.cache.get(oldState.guild.id))
+            await client.guilds.fetch();
+        if (!client.users.cache.get(oldState.member.user.id))
+            await client.users.fetch(oldState.member.user.id);
         if (oldState.member.user.id) {
             voiceStates.delete(oldState.member.user.id);
         }
@@ -45,21 +63,26 @@ client.on('ready', async () => {
     onlineSince = Date.now();
 
     client.user?.setPresence({
-        activities: [{
-            name: "music for everyone",
-            type: ActivityType.Streaming,
-            url: "https://twitch.tv/jxtq",
-        }],
-    });
-    if(process.env.TOPGG_TOKEN && process.env.TOPGG_TOKEN !== "TOPGG_TOKEN") {
-        await axios.post(`https://top.gg/api/bots/${process.env.CLIENT_ID}/stats`, {
-            server_count: client.guilds.cache.size,
-        },
-        {
-            headers: {
-                Authorization: process.env.TOPGG_TOKEN,
+        activities: [
+            {
+                name: 'music for everyone',
+                type: ActivityType.Streaming,
+                url: 'https://twitch.tv/jxtq',
             },
-        })
+        ],
+    });
+    if (process.env.TOPGG_TOKEN && process.env.TOPGG_TOKEN !== 'TOPGG_TOKEN') {
+        await axios.post(
+            `https://top.gg/api/bots/${process.env.CLIENT_ID}/stats`,
+            {
+                server_count: client.guilds.cache.size,
+            },
+            {
+                headers: {
+                    Authorization: process.env.TOPGG_TOKEN,
+                },
+            },
+        );
     }
 });
 
@@ -70,14 +93,14 @@ client.on('interactionCreate', async (interaction) => {
 const token = process.env.TOKEN;
 
 if (!token) {
-    throw new Error("TOKEN is not defined in the environment variables");
+    throw new Error('TOKEN is not defined in the environment variables');
 }
 
 const app = new Hono();
 
 const dev = process.env.NODE_ENV !== 'production';
 
-app.get("/", (c) => c.redirect("https://muusik.app"));
+app.get('/', (c) => c.redirect('https://muusik.app'));
 routeHandlers.auth_type(app, dev);
 routeHandlers.check_permissions(app, client);
 routeHandlers.check_playing(app, client, voiceStates, player);
@@ -95,7 +118,14 @@ routeHandlers.scrobble(app);
 routeHandlers.session_type(app);
 routeHandlers.skip(app, client, voiceStates, player);
 routeHandlers.song_info(app);
-routeHandlers.shuffle(app, client, voiceStates, player, updates, updatesTimeout);
+routeHandlers.shuffle(
+    app,
+    client,
+    voiceStates,
+    player,
+    updates,
+    updatesTimeout,
+);
 routeHandlers.get_owner(app, client, voiceStates);
 routeHandlers.volume(app, player, voiceStates);
 routeHandlers.updates(app, voiceStates, updates);

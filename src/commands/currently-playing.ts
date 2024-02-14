@@ -1,4 +1,9 @@
-import { CommandInteraction, EmbedBuilder, GuildMember, VoiceBasedChannel } from 'discord.js';
+import {
+    CommandInteraction,
+    EmbedBuilder,
+    GuildMember,
+    VoiceBasedChannel,
+} from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -10,7 +15,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to see what\'s playing!');
+                .setDescription(
+                    "You need to be in a voice channel to see what's playing!",
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -19,15 +26,22 @@ export default async (interaction: CommandInteraction) => {
         if (!currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        const progressBar = createProgressBar(node.node.streamTime, node.node.totalDuration);
+        const progressBar = createProgressBar(
+            node.node.streamTime,
+            node.node.totalDuration,
+        );
 
         let embed = new EmbedBuilder()
             .setTitle('Currently playing')
-            .setDescription(`[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url}) requested by ${currentTrack.requestedBy}\n\n${progressBar}`)
+            .setDescription(
+                `[${currentTrack.title} by ${currentTrack.author}](${currentTrack.url}) requested by ${currentTrack.requestedBy}\n\n${progressBar}`,
+            )
             .setColor(colors.Muusik);
 
         await interaction.reply({ embeds: [embed], ephemeral: true });
@@ -43,7 +57,10 @@ function createProgressBar(streamTime: number, totalDuration: number) {
     const emptyBarEmoji = '▬';
     const progressMarker = '🔘';
 
-    const bar = filledBarEmoji.repeat(filledBars) + progressMarker + emptyBarEmoji.repeat(emptyBars);
+    const bar =
+        filledBarEmoji.repeat(filledBars) +
+        progressMarker +
+        emptyBarEmoji.repeat(emptyBars);
 
     return `${formatTime(streamTime)} ${bar} ${formatTime(totalDuration)}`;
 }

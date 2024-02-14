@@ -1,4 +1,9 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+} from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -10,7 +15,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to skip songs!');
+                .setDescription(
+                    'You need to be in a voice channel to skip songs!',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -18,7 +25,9 @@ export default async (interaction: CommandInteraction) => {
         if (!node) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 

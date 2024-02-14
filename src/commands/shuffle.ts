@@ -1,4 +1,9 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+} from 'discord.js';
 import { player, updates, updatesTimeout } from '..';
 import { colors } from '../types';
 
@@ -10,7 +15,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to shuffle the music.');
+                .setDescription(
+                    'You need to be in a voice channel to shuffle the music.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -18,14 +25,18 @@ export default async (interaction: CommandInteraction) => {
         if (!node || !node.currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         if (!node.tracks.data || node.tracks.data.length <= 1) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription('There are not enough songs in the queue to shuffle.');
+                .setDescription(
+                    'There are not enough songs in the queue to shuffle.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -39,10 +50,13 @@ export default async (interaction: CommandInteraction) => {
             paused: current?.paused || false,
         });
         clearTimeout(updatesTimeout.get(voiceChannel.guild.id));
-        updatesTimeout.set(voiceChannel.guild.id, setTimeout(() => {
-            updates.delete(voiceChannel.guild.id);
-        }, 10000));
-        
+        updatesTimeout.set(
+            voiceChannel.guild.id,
+            setTimeout(() => {
+                updates.delete(voiceChannel.guild.id);
+            }, 10000),
+        );
+
         const embed = new EmbedBuilder()
             .setColor(colors.Muusik)
             .setDescription('The queue has been shuffled.');

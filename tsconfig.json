@@ -1,10 +1,10 @@
 {
-  "compilerOptions": {
-    "strict": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx",
-    "outDir": "build",
-    "rootDir": "src",
-    "skipLibCheck": true
-  }
+    "compilerOptions": {
+        "strict": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "hono/jsx",
+        "outDir": "build",
+        "rootDir": "src",
+        "skipLibCheck": true
+    }
 }

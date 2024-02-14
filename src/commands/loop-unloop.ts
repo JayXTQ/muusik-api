@@ -1,4 +1,10 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder, ChatInputCommandInteraction } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+    ChatInputCommandInteraction,
+} from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -12,7 +18,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to loop the music.');
+                .setDescription(
+                    'You need to be in a voice channel to loop the music.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -20,7 +28,9 @@ export default async (interaction: ChatInputCommandInteraction) => {
         if (!node || !node.currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -39,7 +49,10 @@ export default async (interaction: ChatInputCommandInteraction) => {
                 loopStatus = 'Looping disabled';
                 break;
             default:
-                return interaction.reply({ content: 'Invalid subcommand', ephemeral: true });
+                return interaction.reply({
+                    content: 'Invalid subcommand',
+                    ephemeral: true,
+                });
         }
 
         const embed = new EmbedBuilder()

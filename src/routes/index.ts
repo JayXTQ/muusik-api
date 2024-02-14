@@ -15,8 +15,8 @@ export { default as scrobble } from './scrobble';
 export { default as session_type } from './session_type';
 export { default as skip } from './skip';
 export { default as song_info } from './song-info';
-export { default as shuffle } from './shuffle'
-export { default as get_owner } from './get-owner'
-export { default as volume } from './volume'
-export { default as updates } from './updates'
-export { default as previous } from './previous'
+export { default as shuffle } from './shuffle';
+export { default as get_owner } from './get-owner';
+export { default as volume } from './volume';
+export { default as updates } from './updates';
+export { default as previous } from './previous';

@@ -1,4 +1,9 @@
-import { CommandInteraction, EmbedBuilder, GuildMember, VoiceBasedChannel } from 'discord.js';
+import {
+    CommandInteraction,
+    EmbedBuilder,
+    GuildMember,
+    VoiceBasedChannel,
+} from 'discord.js';
 import { player } from '..';
 import { lyricsExtractor } from '@discord-player/extractor';
 import { colors } from '../types';
@@ -13,7 +18,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to see what\'s playing!');
+                .setDescription(
+                    "You need to be in a voice channel to see what's playing!",
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -23,7 +30,9 @@ export default async (interaction: CommandInteraction) => {
         if (!currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 

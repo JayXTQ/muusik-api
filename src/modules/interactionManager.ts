@@ -1,4 +1,9 @@
-import { Interaction, StringSelectMenuInteraction, ButtonInteraction, ModalSubmitInteraction } from 'discord.js';
+import {
+    Interaction,
+    StringSelectMenuInteraction,
+    ButtonInteraction,
+    ModalSubmitInteraction,
+} from 'discord.js';
 import { CommandHandlers as CommandHandlersType, colors } from '../types';
 import * as CommandHandlers from '../commands';
 
@@ -6,7 +11,9 @@ export default {
     handleInteraction: async (interaction: Interaction) => {
         if (interaction.isCommand()) {
             const { commandName } = interaction;
-            const handler = (CommandHandlers as unknown as CommandHandlersType)[`${commandName}Command`];
+            const handler = (CommandHandlers as unknown as CommandHandlersType)[
+                `${commandName}Command`
+            ];
             if (handler) {
                 await handler(interaction);
             } else {
@@ -16,18 +23,25 @@ export default {
                     description: `Command not found.\nNo handler for command: ${commandName}`,
                     color: colors.Error,
                 };
-                await interaction.reply({ embeds: [errorEmbed], ephemeral: true });
+                await interaction.reply({
+                    embeds: [errorEmbed],
+                    ephemeral: true,
+                });
             }
         } else if (interaction.isButton()) {
             const buttonInteraction = interaction as ButtonInteraction;
             switch (buttonInteraction.customId) {
                 case 'previous_queue_page':
                 case 'next_queue_page':
-                    await CommandHandlers.handleQueuePagination(buttonInteraction);
+                    await CommandHandlers.handleQueuePagination(
+                        buttonInteraction,
+                    );
                     break;
                 case 'previous_page':
                 case 'next_page':
-                    await CommandHandlers.handleHelpCommandPagination(buttonInteraction);
+                    await CommandHandlers.handleHelpCommandPagination(
+                        buttonInteraction,
+                    );
                     break;
                 case 'volume_down_10':
                 case 'volume_down_5':
@@ -39,19 +53,25 @@ export default {
                 // Add other button interaction cases as needed
             }
         } else if (interaction.isModalSubmit()) {
-            const modalSubmitInteraction = interaction as ModalSubmitInteraction;
+            const modalSubmitInteraction =
+                interaction as ModalSubmitInteraction;
             if (modalSubmitInteraction.customId === 'custom_volume_modal') {
                 await CommandHandlers.handleVolumeModal(modalSubmitInteraction);
             }
             // Add other modal submit interaction cases as needed
         } else if (interaction.isStringSelectMenu()) {
-            const selectMenuInteraction = interaction as StringSelectMenuInteraction;
+            const selectMenuInteraction =
+                interaction as StringSelectMenuInteraction;
             switch (selectMenuInteraction.customId) {
                 case 'force-song':
-                    await CommandHandlers.handleForceplaySelectMenuInteraction(selectMenuInteraction);
+                    await CommandHandlers.handleForceplaySelectMenuInteraction(
+                        selectMenuInteraction,
+                    );
                     break;
                 case 'select-song':
-                    await CommandHandlers.handleSelectMenuInteraction(selectMenuInteraction);
+                    await CommandHandlers.handleSelectMenuInteraction(
+                        selectMenuInteraction,
+                    );
                     break;
                 // Add other select menu interaction cases as needed
             }

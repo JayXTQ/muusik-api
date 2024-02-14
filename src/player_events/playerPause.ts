@@ -10,8 +10,11 @@ export default function () {
             paused: true,
         });
         clearTimeout(updatesTimeout.get(queue.guild.id)!);
-        updatesTimeout.set(queue.guild.id, setTimeout(() => {
-            updates.delete(queue.guild.id);
-        }, 10000));
+        updatesTimeout.set(
+            queue.guild.id,
+            setTimeout(() => {
+                updates.delete(queue.guild.id);
+            }, 10000),
+        );
     });
 }

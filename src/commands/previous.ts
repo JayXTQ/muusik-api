@@ -1,6 +1,11 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+} from 'discord.js';
 import { useHistory } from 'discord-player';
-import { colors } from '../types'; 
+import { colors } from '../types';
 
 export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'previous') {
@@ -10,7 +15,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to play the previous song.');
+                .setDescription(
+                    'You need to be in a voice channel to play the previous song.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -18,7 +25,9 @@ export default async (interaction: CommandInteraction) => {
         if (!history) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No previous track history found for this server.');
+                .setDescription(
+                    'No previous track history found for this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -27,7 +36,7 @@ export default async (interaction: CommandInteraction) => {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
                 .setDescription('Playing the previous track.');
-            await interaction.reply({ embeds: [embed], ephemeral: true  });
+            await interaction.reply({ embeds: [embed], ephemeral: true });
         } catch (error) {
             console.error('Error playing previous track:', error);
             const embed = new EmbedBuilder()

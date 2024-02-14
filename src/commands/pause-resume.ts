@@ -1,4 +1,9 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+} from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -10,7 +15,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription('You need to be in a voice channel to pause the music!');
+                .setDescription(
+                    'You need to be in a voice channel to pause the music!',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -18,7 +25,9 @@ export default async (interaction: CommandInteraction) => {
         if (!node || !node.player) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -46,7 +55,9 @@ export const resumeCommand = async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription('You need to be in a voice channel to resume the music!');
+                .setDescription(
+                    'You need to be in a voice channel to resume the music!',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -54,7 +65,9 @@ export const resumeCommand = async (interaction: CommandInteraction) => {
         if (!node || !node.player) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Muusik)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 

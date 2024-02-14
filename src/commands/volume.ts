@@ -1,4 +1,17 @@
-import { CommandInteraction, GuildMember, VoiceBasedChannel, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, ButtonInteraction, ModalSubmitInteraction, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js';
+import {
+    CommandInteraction,
+    GuildMember,
+    VoiceBasedChannel,
+    EmbedBuilder,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder,
+    ButtonInteraction,
+    ModalSubmitInteraction,
+    ModalBuilder,
+    TextInputBuilder,
+    TextInputStyle,
+} from 'discord.js';
 import { player } from '..';
 import { colors } from '../types';
 
@@ -10,7 +23,9 @@ export default async (interaction: CommandInteraction) => {
         if (!voiceChannel) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('You need to be in a voice channel to change the volume.');
+                .setDescription(
+                    'You need to be in a voice channel to change the volume.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -18,17 +33,24 @@ export default async (interaction: CommandInteraction) => {
         if (!node || !node.currentTrack) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('No music is currently playing in this server.');
+                .setDescription(
+                    'No music is currently playing in this server.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
         const inputVolume = interaction.options.get('volume')?.value as number;
         const currentVolume = inputVolume ?? node.node.volume;
 
-        if (inputVolume !== undefined && (inputVolume < 0 || inputVolume > 100)) {
+        if (
+            inputVolume !== undefined &&
+            (inputVolume < 0 || inputVolume > 100)
+        ) {
             const embed = new EmbedBuilder()
                 .setColor(colors.Error)
-                .setDescription('Please provide a volume level between 0 and 100.');
+                .setDescription(
+                    'Please provide a volume level between 0 and 100.',
+                );
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
@@ -41,7 +63,11 @@ export default async (interaction: CommandInteraction) => {
             .setImage('https://files.radnotred.dev/u/Embed_Width10px.png');
 
         const buttons = createVolumeButtons();
-        await interaction.reply({ embeds: [embed], components: [buttons], ephemeral: true });
+        await interaction.reply({
+            embeds: [embed],
+            components: [buttons],
+            ephemeral: true,
+        });
     }
 };
 
@@ -51,19 +77,36 @@ function createVolumeBar(volume: number) {
     const emptyBars = totalBars - filledBars;
     const filledBarEmoji = '🟩';
     const emptyBarEmoji = '⬜';
-    return '🔊  ' + filledBarEmoji.repeat(filledBars) + emptyBarEmoji.repeat(emptyBars);
+    return (
+        '🔊  ' +
+        filledBarEmoji.repeat(filledBars) +
+        emptyBarEmoji.repeat(emptyBars)
+    );
 }
 
-
 function createVolumeButtons() {
-    return new ActionRowBuilder<ButtonBuilder>()
-        .addComponents(
-            new ButtonBuilder().setCustomId('volume_down_10').setLabel('-10%').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('volume_down_5').setLabel('-5%').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('open_volume_modal').setLabel('Custom').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('volume_up_5').setLabel('+5%').setStyle(ButtonStyle.Primary),
-            new ButtonBuilder().setCustomId('volume_up_10').setLabel('+10%').setStyle(ButtonStyle.Primary)
-        );
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+            .setCustomId('volume_down_10')
+            .setLabel('-10%')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('volume_down_5')
+            .setLabel('-5%')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('open_volume_modal')
+            .setLabel('Custom')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('volume_up_5')
+            .setLabel('+5%')
+            .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+            .setCustomId('volume_up_10')
+            .setLabel('+10%')
+            .setStyle(ButtonStyle.Primary),
+    );
 }
 
 export async function handleVolumeButton(interaction: ButtonInteraction) {
@@ -93,8 +136,8 @@ export async function handleVolumeButton(interaction: ButtonInteraction) {
                         .setValue(node.node.volume.toString())
                         .setRequired(true)
                         .setMinLength(1)
-                        .setMaxLength(3)
-                )
+                        .setMaxLength(3),
+                ),
             );
 
         await interaction.showModal(modal);
@@ -121,7 +164,7 @@ export async function handleVolumeButton(interaction: ButtonInteraction) {
             .setColor(colors.Muusik)
             .setDescription(`### Volume set to ${newVolume}%\n${volumeBar}`)
             .setImage('https://files.radnotred.dev/u/Embed_Width10px.png');
-    
+
         await interaction.update({ embeds: [embed] });
     }
 }
@@ -130,13 +173,17 @@ export async function handleVolumeModal(interaction: ModalSubmitInteraction) {
     const guildId = interaction.guildId;
     if (!guildId) return;
 
-    const customVolumeInput = interaction.fields.getTextInputValue('custom_volume_input');
+    const customVolumeInput = interaction.fields.getTextInputValue(
+        'custom_volume_input',
+    );
     const customVolume = parseInt(customVolumeInput, 10);
 
     if (isNaN(customVolume) || customVolume < 0 || customVolume > 100) {
         const embed = new EmbedBuilder()
             .setColor(colors.Error)
-            .setDescription('Please enter a valid volume number between 0 and 100.');
+            .setDescription(
+                'Please enter a valid volume number between 0 and 100.',
+            );
         await interaction.reply({ embeds: [embed], ephemeral: true });
         return;
     }
@@ -160,5 +207,9 @@ export async function handleVolumeModal(interaction: ModalSubmitInteraction) {
 
     const buttons = createVolumeButtons();
 
-    await interaction.reply({ embeds: [embed], components: [buttons], ephemeral: true });
+    await interaction.reply({
+        embeds: [embed],
+        components: [buttons],
+        ephemeral: true,
+    });
 }
