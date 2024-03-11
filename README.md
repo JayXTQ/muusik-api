@@ -40,6 +40,8 @@ This will then run the project and you will be able to access it on your localho
 
 Hosting the project is more of a personal thing, you can host it locally on a server, or on an off-site cloud server like Heroku. For the original https://api.muusik.app we use Heroku to host the project.
 
+With Heroku hosting, you can just link your GitHub fork to Heroku and then it will automatically deploy the project for you.
+
 You also do not need to host the frontend of the project, you can just host the API then use the main website to access your API. To do this you will need to have the original Muusik bot in your server and you will need to be in a VC. Once you are in a VC, go to the dashboard > settings > and then change the API URL to your API URL. **Note:** You have to be the owner of the server to change these settings.
 
 ### Making changes
