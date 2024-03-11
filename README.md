@@ -36,6 +36,12 @@ npm run dev
 
 This will then run the project and you will be able to access it on your localhost, for instance `http://localhost:8000` (this is default, unless you change the port in `.env`).
 
+### Hosting the project
+
+Hosting the project is more of a personal thing, you can host it locally on a server, or on an off-site cloud server like Heroku. For the original https://api.muusik.app we use Heroku to host the project.
+
+You also do not need to host the frontend of the project, you can just host the API then use the main website to access your API. To do this you will need to have the original Muusik bot in your server and you will need to be in a VC. Once you are in a VC, go to the dashboard > settings > and then change the API URL to your API URL. **Note:** You have to be the owner of the server to change these settings.
+
 ### Making changes
 
 Once you have made your changes, commit to your fork and then you can go and make a pull request back to the main repository. Once you have done this, I will review your changes and then merge them into the main repository if the changes are good. For more information about making pull requests, check on [GitHub's Docs](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests).
@@ -44,99 +50,3 @@ Once you have made your changes, commit to your fork and then you can go and mak
 
 If you find any issues with the project, please create an issue on the repository and I will look into it as soon as possible. For more information about creating issues, check on [GitHub's Docs](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-issues).
 
-<!-- ## API Documentation
-
-### GET /
-
-Redirects to muusik.app
-
-### GET /find-user
-
-Finds the user's voice channel
-
-#### Query Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| user     | Snowflake | The ID of the user                                                          |
-
-### POST /play
-
-Plays a song in the user's voice channel
-
-#### Body Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| url      | String    | The URL of the song                                                         |
-| user     | Snowflake | The ID of the user                                                          |
-
-### GET /auth/:type
-
-Authenticates the user with the `:type` provided
-
-#### Types
-
-| Name     | Description                                                                 |
-| -------- | --------------------------------------------------------------------------- |
-| lastfm   | Authenticates the user with Last.fm                                         |
-
-### GET /find-song
-
-Finds a song on last.fm
-
-#### Query Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| query    | String    | The query to search for                                                     |
-| limit    | Number?   | The limit of results to return                                              |
-
-### POST /scrobble
-
-Scrobbles a song to last.fm
-
-#### Body Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| user     | String    | The user secret of the user's last.fm account                               |
-
-### GET /session/:type
-
-Gets the session of the user
-
-#### Types
-
-| Name     | Description                                                                 |
-| -------- | --------------------------------------------------------------------------- |
-| lastfm   | Gets the session of the user's Last.fm account                              |
-
-#### Query Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| token    | String    | The user token of the user's last.fm account                                |
-
-### GET /get-roles
-
-Gets the roles of the guild
-
-#### Query Parameters
-
-| Name     | Type      | Description                                                                 |
-| -------- | --------- | --------------------------------------------------------------------------- |
-| guild    | Snowflake | The ID of the guild                                                         |
-
-### GET /check-permissions
-
-Checks the permissions of the user
-
-#### Query Parameters
-
-| Name       | Type      | Description                                                                 |
-| ---------- | --------- | --------------------------------------------------------------------------- |
-| guild      | Snowflake | The ID of the guild                                                         |
-| user       | Snowflake | The ID of the user                                                          |
-| permission | Number    | The permission to check for (i.e. admin is 0x8)                             |
- -->
