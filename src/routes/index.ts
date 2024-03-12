@@ -20,3 +20,4 @@ export { default as get_owner } from './get-owner';
 export { default as volume } from './volume';
 export { default as updates } from './updates';
 export { default as previous } from './previous';
+export { default as move_track } from './move-track';

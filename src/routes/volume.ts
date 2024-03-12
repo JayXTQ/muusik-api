@@ -1,5 +1,4 @@
 import { Hono } from 'hono';
-import axios, { AxiosResponse } from 'axios';
 import { Player } from 'discord-player';
 import { VoiceStates } from '../types';
 

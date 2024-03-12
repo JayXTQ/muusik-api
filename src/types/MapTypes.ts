@@ -3,3 +3,4 @@ export type Updates = Map<
     string,
     { track: boolean; volume: boolean; queue: boolean; paused: boolean }
 >;
+export type UpdatesTimeout = Map<string, NodeJS.Timeout>;

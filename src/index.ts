@@ -130,6 +130,14 @@ routeHandlers.get_owner(app, client, voiceStates);
 routeHandlers.volume(app, player, voiceStates);
 routeHandlers.updates(app, voiceStates, updates);
 routeHandlers.previous(app, client, player, voiceStates);
+routeHandlers.move_track(
+    app,
+    player,
+    voiceStates,
+    updates,
+    updatesTimeout,
+    client,
+);
 
 const port = Number(process.env.PORT || 8000);
 serve({ port, fetch: app.fetch });
