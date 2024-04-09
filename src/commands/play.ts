@@ -139,7 +139,7 @@ export async function handleSelectMenuInteraction(
                 .setColor(colors.Muusik)
                 .setDescription(
                     currentlyPlaying
-                        ? `[${songName} by ${authorName}](${songUrl}) added to queue, position ${queuePosition + 1}`
+                        ? (songName === 'Unknown' && authorName === 'Unknown' ? `Unknown song added to the queue, position ${queuePosition + 1}` : `[${songName} by ${authorName}](${songUrl}) added to queue, position ${queuePosition + 1}`)
                         : `Now playing [${songName} by ${authorName}](${songUrl})`,
                 );
             await interaction.reply({ embeds: [embed], ephemeral: true });
