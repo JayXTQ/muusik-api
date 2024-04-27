@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import axios from 'axios';
+import { StatusCode } from 'hono/utils/http-status';
 
 export default function (app: Hono) {
     app.get('/find-song', async (c) => {
@@ -21,7 +22,7 @@ export default function (app: Hono) {
             );
 
             if (response.status !== 200) {
-                c.status(response.status);
+                c.status(response.status as StatusCode);
                 return c.json({
                     success: false,
                     message: 'Error fetching song',
