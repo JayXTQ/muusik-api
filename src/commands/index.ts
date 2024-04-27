@@ -1,4 +1,4 @@
-export { default as help } from './help';
+export { default as helpCommand } from './help';
 export { default as currentlyplayingCommand } from './currently-playing';
 export { default as infoCommand } from './info';
 export { default as playCommand } from './play';
