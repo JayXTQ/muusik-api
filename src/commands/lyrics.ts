@@ -5,10 +5,8 @@ import {
     VoiceBasedChannel,
 } from 'discord.js';
 import { player } from '..';
-import { lyricsExtractor } from '@discord-player/extractor';
 import { colors } from '../types';
-
-const lyricsClient = lyricsExtractor(); // optional API key here :3
+import { LrcGetResult, LrcSearchResult } from 'discord-player';
 
 export default async (interaction: CommandInteraction) => {
     if (interaction.commandName === 'lyrics') {
@@ -36,13 +34,14 @@ export default async (interaction: CommandInteraction) => {
             return interaction.reply({ embeds: [embed], ephemeral: true });
         }
 
-        lyricsClient
-            .search(`${currentTrack.title} ${currentTrack.author}`)
-            .then((lyrics) => {
+        await player.lyrics
+            .search({q:`${currentTrack.title} ${currentTrack.author}`})
+            .then((lyrics: LrcSearchResult[] | string) => {
+                lyrics = (lyrics[0] as LrcSearchResult)?.plainLyrics || 'No lyrics found.';
                 const embed = new EmbedBuilder()
                     .setTitle(`${currentTrack.title} by ${currentTrack.author}`)
                     .setURL(currentTrack.url)
-                    .setDescription(lyrics?.lyrics ?? 'No lyrics found.')
+                    .setDescription(lyrics)
                     .setColor(colors.Muusik);
 
                 interaction.reply({ embeds: [embed], ephemeral: true });

@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { Client, VoiceBasedChannel } from 'discord.js';
-import { Player } from 'discord-player';
-import { lyricsExtractor } from '@discord-player/extractor';
+import { LrcSearchResult, Player } from 'discord-player';
 
 export default function (
     app: Hono,
@@ -12,7 +11,6 @@ export default function (
     app.get('/current-song', async (c) => {
         c.header('Access-Control-Allow-Origin', process.env.FRONTEND_ORIGIN);
         c.header('Access-Control-Allow-Credentials', 'true');
-        const lyricsFinder = lyricsExtractor();
         const { user } = c.req.query() as { user: string };
         if (!user) {
             c.status(400);
@@ -36,11 +34,12 @@ export default function (
         }
         const currentTrackTimeElapsed =
             queue.node.getTimestamp()?.current.value || 0;
-        const trackLyrics = await lyricsFinder
-            .search(
-                `${queue.currentTrack?.title} ${queue.currentTrack?.author}`,
-            )
-            .catch(() => 'No lyrics found');
+        let trackLyrics: LrcSearchResult[] | string = await player.lyrics
+            .search( {
+                q: `${queue.currentTrack?.title} ${queue.currentTrack?.author}`,
+            }
+            );
+        trackLyrics = trackLyrics[0]?.plainLyrics || 'No lyrics found';
         return c.json({
             song: queue.currentTrack,
             currentTrackTimeElapsed,
