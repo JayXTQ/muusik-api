@@ -21,7 +21,7 @@ export default function (app: Hono) {
             );
 
             if (response.status !== 200) {
-                c.status(response.status);
+                c.status(400);
                 return c.json({
                     success: false,
                     message: 'Error fetching song',
