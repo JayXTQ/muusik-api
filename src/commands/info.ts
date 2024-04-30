@@ -18,7 +18,11 @@ If you are looking for our dashboard, you can find it [here](https://muusik.app/
 Bot Invite: https://muusik.app/invite
 Discord Server: https://muusik.app/discord
 Frontend Source: https://github.com/JayXTQ/muusik-web
-Backend Source: https://github.com/JayXTQ/muusik-api`,
+Backend Source: https://github.com/JayXTQ/muusik-api
+
+Thank you for using muusik.app!
+
+If you wish to do so, you can donate at my Ko-Fi page: https://ko-fi.com/jxtq`,
                     color: colors.Muusik,
                 },
             ],
